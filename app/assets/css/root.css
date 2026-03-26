@@ -1,0 +1,42 @@
+:root {
+  /* === COLORS === */
+  --bg-main: #0a0a0f;            /* основний чорний */
+  --bg-secondary: #11111a;       /* другий фон */
+  --glass-bg: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(255, 255, 255, 0.1);
+
+  --text-primary: #ffffff;
+  --text-secondary: #a1a1aa;
+
+  --accent: #7c3aed;             /* фіолетовий */
+  --accent-hover: #6d28d9;
+  --accent-light: rgba(124, 58, 237, 0.15);
+
+  /* === TYPOGRAPHY === */
+  --font-main: 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-lg: 18px;
+  --text-xl: 24px;
+  --text-2xl: 32px;
+  --text-3xl: 48px;
+
+  /* === SPACING === */
+  --space-xs: 6px;
+  --space-sm: 10px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+
+  /* === RADIUS === */
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-xl: 32px;
+
+  /* === SHADOW === */
+  --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
