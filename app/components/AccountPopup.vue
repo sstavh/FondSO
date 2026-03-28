@@ -1,10 +1,5 @@
 <script setup lang="ts">
-interface UserProfile {
-  firstName: string
-  lastName: string
-  email: string
-  avatar: string
-}
+import type { UserProfile } from '~/data/userProfile'
 
 defineProps<{
   isOpen: boolean
@@ -23,7 +18,9 @@ const emit = defineEmits<{
     @click="emit('close')"
   >
     <div class="account-popup" @click.stop>
-      <button class="account-popup__close" @click="emit('close')">×</button>
+      <button class="account-popup__close" @click="emit('close')">
+        ×
+      </button>
 
       <div class="account-popup__avatar-wrap">
         <img
