@@ -1,14 +1,14 @@
 :root {
   /* === COLORS === */
-  --bg-main: #0a0a0f;            /* основний чорний */
-  --bg-secondary: #11111a;       /* другий фон */
+  --bg-main: #0a0a0f;
+  --bg-secondary: #11111a;
   --glass-bg: rgba(255, 255, 255, 0.05);
   --glass-border: rgba(255, 255, 255, 0.1);
 
   --text-primary: #ffffff;
   --text-secondary: #a1a1aa;
 
-  --accent: #7c3aed;             /* фіолетовий */
+  --accent: #7c3aed;
   --accent-hover: #6d28d9;
   --accent-light: rgba(124, 58, 237, 0.15);
 
@@ -23,6 +23,22 @@
   --text-xl: 24px;
   --text-2xl: 32px;
   --text-3xl: 48px;
+
+  /* === FONT WEIGHT === */
+  --font-thin: 100;
+  --font-light: 300;
+  --font-regular: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+  --font-black: 900;
+
+  /* === LINE HEIGHT === */
+  --leading-tight: 1.2;
+  --leading-snug: 1.35;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.65;
+  --leading-loose: 1.8;
 
   /* === SPACING === */
   --space-xs: 6px;

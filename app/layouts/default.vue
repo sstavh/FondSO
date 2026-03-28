@@ -4,7 +4,7 @@
       <main>
       <NuxtPage />
     </main>
-  фв
+  
   </div>
 </template>
 
