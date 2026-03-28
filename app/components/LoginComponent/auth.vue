@@ -1,5 +1,7 @@
 <template>
-  <div class="auth-wrapper">
+  <RegisterFlow v-if="showRegisterSteps" />
+
+  <div v-else class="auth-wrapper">
     <div class="auth-card">
       <h2 class="auth-title">{{ isLogin ? 'Вхід' : 'Створити акаунт' }}</h2>
       <p class="auth-subtitle">
@@ -101,9 +103,12 @@
 
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
+import { userProfile } from '~/data/userProfile'
+import RegisterFlow from '~/components/LoginComponent/RegisterFlow.vue'
 
-const isLogin = ref<boolean>(true)
-const message = ref<string>('')
+const isLogin = ref(true)
+const message = ref('')
+const showRegisterSteps = ref(false)
 
 const loginForm = reactive({
   email: '',
@@ -124,8 +129,6 @@ const switchMode = (loginMode: boolean): void => {
 
 const handleLogin = async (): Promise<void> => {
   message.value = `Спроба входу для: ${loginForm.email}`
-
-  // emit / api / store логіка тут
 }
 
 const handleRegister = async (): Promise<void> => {
@@ -134,18 +137,19 @@ const handleRegister = async (): Promise<void> => {
     return
   }
 
-  message.value = `Акаунт для ${registerForm.email} готовий до створення`
+  userProfile.firstName = registerForm.name
+  userProfile.email = registerForm.email
 
-  // emit / api / store логіка тут
+  message.value = ''
+  showRegisterSteps.value = true
 }
 </script>
 
 <style scoped>
 .auth-wrapper {
- width: 600px;
+  width: 600px;
   display: flex;
   align-items: center;
-
   padding: var(--space-lg);
   font-family: var(--font-main);
 }
@@ -276,6 +280,7 @@ const handleRegister = async (): Promise<void> => {
 
 @media (max-width: 480px) {
   .auth-wrapper {
+    width: 100%;
     padding: var(--space-md);
   }
 
