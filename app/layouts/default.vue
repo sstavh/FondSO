@@ -1,11 +1,10 @@
 <template>
   <div>
-    <Header />
-    
+
       <main>
       <NuxtPage />
     </main>
-    <Footer />
+  фв
   </div>
 </template>
 
