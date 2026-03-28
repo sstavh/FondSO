@@ -145,7 +145,10 @@ const currentComponent = computed(() => {
 </template>
 
 <style scoped>
+
 .layout-shell {
+    position: fixed; /* або absolute */
+  z-index: 9999; 
   min-height: 100vh;
   display: grid;
   grid-template-columns: 300px 1fr;
@@ -154,12 +157,12 @@ const currentComponent = computed(() => {
 
 .sidebar {
   min-height: 100vh;
-  border-right: 1px solid var(--glass-border);
-  background: var(--bg-main);
+  border-right: 1px solid var(--accents);
+  background: var( --glass-bg);
 }
 
 .sidebar-inner {
-  min-height: 870px;
+  min-height: 850px;
   padding: 32px 20px 20px;
   display: flex;
   flex-direction: column;
