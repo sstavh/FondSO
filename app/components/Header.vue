@@ -15,12 +15,8 @@ const isPortfolioOpen = ref(false)
 const isAccountPopupOpen = ref(false)
 const activeView = ref<ViewKey | null>(null)
 
-const userProfile = {
-  firstName: 'Іван',
-  lastName: 'Петренко',
-  email: 'ivan.petrenko@gmail.com',
-  avatar: '/images/avatar.jpg',
-}
+import { userProfile } from '~/data/userProfile'
+import AccountPopup from '~/components/AccountPopup.vue'
 
 const togglePortfolio = () => {
   isPortfolioOpen.value = !isPortfolioOpen.value
@@ -136,26 +132,11 @@ const currentComponent = computed(() => {
       </div>
     </aside>
 
-    <div
-      v-if="isAccountPopupOpen"
-      class="account-popup-overlay"
-      @click="closeAccountPopup"
-    >
-      <div class="account-popup" @click.stop>
-        <button class="account-popup__close" @click="closeAccountPopup">×</button>
-
-        <div class="account-popup__avatar-wrap">
-          <img
-            :src="userProfile.avatar"
-            :alt="`${userProfile.firstName} ${userProfile.lastName}`"
-            class="account-popup__avatar"
-          />
-        </div>
-
-        <h3 class="account-popup__name">{{ userProfile.firstName }} {{ userProfile.lastName }}</h3>
-        <p class="account-popup__email">{{ userProfile.email }}</p>
-      </div>
-    </div>
+    <AccountPopup
+      :is-open="isAccountPopupOpen"
+      :user-profile="userProfile"
+      @close="closeAccountPopup"
+    />
 
     <main class="content-section">
       <component :is="currentComponent" v-if="currentComponent" />
@@ -178,7 +159,7 @@ const currentComponent = computed(() => {
 }
 
 .sidebar-inner {
-  min-height: 100vh;
+  min-height: 870px;
   padding: 32px 20px 20px;
   display: flex;
   flex-direction: column;
@@ -365,74 +346,6 @@ const currentComponent = computed(() => {
 .account-arrow svg {
   width: 20px;
   height: 20px;
-}
-
-.account-popup-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.55);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-lg);
-  z-index: 100;
-}
-
-.account-popup {
-  position: relative;
-  width: 100%;
-  max-width: 360px;
-  padding: var(--space-xl);
-  border-radius: var(--radius-lg);
-  background: var(--bg-secondary);
-  border: 1px solid var(--glass-border);
-  box-shadow: var(--shadow-glass);
-  text-align: center;
-}
-
-.account-popup__close {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  width: 32px;
-  height: 32px;
-  border: none;
-  border-radius: 50%;
-  background: var(--glass-bg);
-  color: var(--text-primary);
-  font-size: 20px;
-  cursor: pointer;
-}
-
-.account-popup__close:hover {
-  background: var(--accent-light);
-}
-
-.account-popup__avatar-wrap {
-  display: flex;
-  justify-content: center;
-  margin-bottom: var(--space-md);
-}
-
-.account-popup__avatar {
-  width: 96px;
-  height: 96px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid var(--glass-border);
-}
-
-.account-popup__name {
-  margin: 0 0 var(--space-xs);
-  color: var(--text-primary);
-  font-size: var(--text-lg);
-  font-weight: 700;
-}
-
-.account-popup__email {
-  margin: 0;
-  color: var(--text-secondary);
-  font-size: var(--text-sm);
 }
 
 .content-section {
