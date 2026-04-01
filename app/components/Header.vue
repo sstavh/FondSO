@@ -151,6 +151,7 @@ const currentComponent = computed(() => {
   z-index: 9999; 
   min-height: 100vh;
   display: grid;
+  width: 300px;
   grid-template-columns: 300px 1fr;
   background: var(--bg-main);
 }
