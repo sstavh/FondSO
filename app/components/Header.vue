@@ -1,11 +1,16 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue'
-import PortfolioOverview from '../components/test.vue'
-import PortfolioHistory from '../components/test.vue'
-import PortfolioSettings from '../components/test.vue'
-import TradingSection from '../pages/login.vue'
+
+import HomeSection from './HomeSection.vue'
+import PortfolioOverview from './testComponents/PortfolioOverview.vue'
+import PortfolioHistory from './testComponents/PortfolioHistory.vue'
+import PortfolioSettings from './testComponents/PortfolioSettings.vue'
+import TradingSection from './testComponents/TradingSection.vue'
+import AccountPopup from '~/components/AccountPopup.vue'
+import { userProfile } from '~/data/userProfile'
 
 type ViewKey =
+  | 'home'
   | 'portfolio-overview'
   | 'portfolio-history'
   | 'portfolio-settings'
@@ -13,10 +18,7 @@ type ViewKey =
 
 const isPortfolioOpen = ref(false)
 const isAccountPopupOpen = ref(false)
-const activeView = ref<ViewKey | null>(null)
-
-import { userProfile } from '~/data/userProfile'
-import AccountPopup from '~/components/AccountPopup.vue'
+const activeView = ref<ViewKey>('home')
 
 const togglePortfolio = () => {
   isPortfolioOpen.value = !isPortfolioOpen.value
@@ -27,7 +29,7 @@ const selectView = (view: ViewKey) => {
 }
 
 const goHome = () => {
-  activeView.value = null
+  activeView.value = 'home'
 }
 
 const openAccountPopup = () => {
@@ -39,14 +41,15 @@ const closeAccountPopup = () => {
 }
 
 const currentComponent = computed(() => {
-  const map = {
+  const map: Record<ViewKey, any> = {
+    home: HomeSection,
     'portfolio-overview': PortfolioOverview,
     'portfolio-history': PortfolioHistory,
     'portfolio-settings': PortfolioSettings,
     trading: TradingSection,
   }
 
-  return activeView.value ? map[activeView.value] : null
+  return map[activeView.value]
 })
 </script>
 
@@ -58,7 +61,11 @@ const currentComponent = computed(() => {
           <p class="sidebar-logo">FondSO</p>
 
           <ul class="nav-list">
-            <li class="nav-item" @click="goHome">
+            <li
+              class="nav-item"
+              :class="{ active: activeView === 'home' }"
+              @click="goHome"
+            >
               <div class="nav-item__left">
                 <span class="nav-icon">
                   <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -80,6 +87,7 @@ const currentComponent = computed(() => {
                 </span>
                 <span>Портфоліо</span>
               </div>
+
               <span class="nav-arrow" :class="{ 'nav-arrow--open': isPortfolioOpen }">
                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -88,12 +96,36 @@ const currentComponent = computed(() => {
             </li>
 
             <ul v-if="isPortfolioOpen" class="subnav-list">
-              <li class="subnav-item" @click="selectView('portfolio-overview')">Огляд</li>
-              <li class="subnav-item" @click="selectView('portfolio-history')">Історія</li>
-              <li class="subnav-item" @click="selectView('portfolio-settings')">Налаштування</li>
+              <li
+                class="subnav-item"
+                :class="{ active: activeView === 'portfolio-overview' }"
+                @click="selectView('portfolio-overview')"
+              >
+                Огляд
+              </li>
+
+              <li
+                class="subnav-item"
+                :class="{ active: activeView === 'portfolio-history' }"
+                @click="selectView('portfolio-history')"
+              >
+                Історія
+              </li>
+
+              <li
+                class="subnav-item"
+                :class="{ active: activeView === 'portfolio-settings' }"
+                @click="selectView('portfolio-settings')"
+              >
+                Налаштування
+              </li>
             </ul>
 
-            <li class="nav-item" @click="selectView('trading')">
+            <li
+              class="nav-item"
+              :class="{ active: activeView === 'trading' }"
+              @click="selectView('trading')"
+            >
               <div class="nav-item__left">
                 <span class="nav-icon">
                   <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -118,8 +150,12 @@ const currentComponent = computed(() => {
             </div>
 
             <div class="account-info">
-              <p class="account-name">{{ userProfile.firstName }} {{ userProfile.lastName }}</p>
-              <p class="account-email">{{ userProfile.email }}</p>
+              <p class="account-name">
+                {{ userProfile.firstName || 'Імʼя' }} {{ userProfile.lastName || 'Прізвище' }}
+              </p>
+              <p class="account-email">
+                {{ userProfile.email || 'email@example.com' }}
+              </p>
             </div>
 
             <span class="account-arrow">
@@ -139,31 +175,27 @@ const currentComponent = computed(() => {
     />
 
     <main class="content-section">
-      <component :is="currentComponent" v-if="currentComponent" />
+      <component :is="currentComponent" />
     </main>
   </div>
 </template>
 
 <style scoped>
-
 .layout-shell {
-    position: fixed; /* або absolute */
-  z-index: 9999; 
   min-height: 100vh;
   display: grid;
-  width: 300px;
   grid-template-columns: 300px 1fr;
   background: var(--bg-main);
 }
 
 .sidebar {
   min-height: 100vh;
-  border-right: 1px solid var(--accents);
-  background: var( --glass-bg);
+  border-right: 1px solid var(--glass-border);
+  background: var(--bg-main);
 }
 
 .sidebar-inner {
-  min-height: 850px;
+  min-height: 100vh;
   padding: 32px 20px 20px;
   display: flex;
   flex-direction: column;
@@ -205,6 +237,12 @@ const currentComponent = computed(() => {
 .nav-item:hover {
   background: var(--glass-bg);
   color: var(--text-primary);
+}
+
+.nav-item.active {
+  background: var(--glass-bg);
+  color: var(--text-primary);
+  border-color: var(--glass-border);
 }
 
 .nav-item__left {
@@ -273,6 +311,11 @@ const currentComponent = computed(() => {
 }
 
 .subnav-item:hover {
+  background: var(--glass-bg);
+  color: var(--text-primary);
+}
+
+.subnav-item.active {
   background: var(--glass-bg);
   color: var(--text-primary);
 }
@@ -353,8 +396,9 @@ const currentComponent = computed(() => {
 }
 
 .content-section {
-  padding: var(--space-xl);
   min-width: 0;
+  padding: 24px;
+  overflow-x: hidden;
 }
 
 @media (max-width: 900px) {
