@@ -12,10 +12,10 @@ import { userProfile } from '~/data/userProfile'
 
 type ViewKey =
   | 'home'
-  | 'portfolio-overview'
+  | 'balance'
   | 'portfolio-overview-2'
   | 'portfolio-history'
-  | 'portfolio-settings'
+  | 'agreements'
   | 'trading'
 
 const isPortfolioOpen = ref(false)
@@ -45,10 +45,10 @@ const closeAccountPopup = () => {
 const currentComponent = computed(() => {
   const map: Record<ViewKey, any> = {
     home: HomeSection,
-    'portfolio-overview': PortfolioOverview,
+    balance: PortfolioOverview,
     'portfolio-overview-2': PortfolioOverview2,
     'portfolio-history': PortfolioHistory,
-    'portfolio-settings': PortfolioSettings,
+    agreements: PortfolioSettings,
     trading: TradingSection,
   }
 
@@ -133,10 +133,10 @@ const currentComponent = computed(() => {
             <ul v-if="isPortfolioOpen" class="subnav-list">
               <li
                 class="subnav-item"
-                :class="{ active: activeView === 'portfolio-overview' }"
-                @click="selectView('portfolio-overview')"
+                :class="{ active: activeView === 'balance' }"
+                @click="selectView('balance')"
               >
-                Огляд
+                Баланс
               </li>
 
               <li
@@ -157,10 +157,10 @@ const currentComponent = computed(() => {
 
               <li
                 class="subnav-item"
-                :class="{ active: activeView === 'portfolio-settings' }"
-                @click="selectView('portfolio-settings')"
+                :class="{ active: activeView === 'agreements' }"
+                @click="selectView('agreements')"
               >
-                Налаштування
+                Огуди
               </li>
             </ul>
 
@@ -243,20 +243,24 @@ const currentComponent = computed(() => {
 
 <style scoped>
 .layout-shell {
-  min-height: 100vh;
+  height: 100vh;
   display: grid;
   grid-template-columns: 300px 1fr;
   background: var(--bg-main);
+  overflow: hidden;
 }
 
 .sidebar {
-  min-height: 100vh;
+  height: 100vh;
+  position: sticky;
+  top: 0;
   border-right: 1px solid var(--glass-border);
   background: var(--bg-main);
+  overflow: hidden;
 }
 
 .sidebar-inner {
-  min-height: 100vh;
+  height: 100vh;
   padding: 32px 20px 20px;
   display: flex;
   flex-direction: column;
@@ -458,21 +462,31 @@ const currentComponent = computed(() => {
 
 .content-section {
   min-width: 0;
+  height: 100vh;
   padding: 24px;
+  overflow-y: auto;
   overflow-x: hidden;
 }
 
 @media (max-width: 900px) {
   .layout-shell {
     grid-template-columns: 1fr;
+    height: auto;
+    overflow: visible;
   }
 
   .sidebar {
-    min-height: auto;
+    position: relative;
+    height: auto;
   }
 
   .sidebar-inner {
-    min-height: auto;
+    height: auto;
+  }
+
+  .content-section {
+    height: auto;
+    overflow: visible;
   }
 }
 </style>

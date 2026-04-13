@@ -1,6 +1,8 @@
 import { reactive } from 'vue'
 
 export type Currency = 'UAH' | 'USD' | 'EUR' | 'PLN'
+export type TransactionStatus = 'completed' | 'pending' | 'failed'
+export type TransactionType = 'deposit' | 'withdrawal' | 'transfer' | 'payment'
 
 export interface UserProfile {
   firstName: string
@@ -25,9 +27,19 @@ export interface BalanceState {
   history: BalanceHistoryItem[]
 }
 
+export interface TransactionItem {
+  id: number
+  type: TransactionType
+  amount: number
+  currency: Currency
+  date: string
+  status: TransactionStatus
+}
+
 export const mainStore = reactive<{
   userProfile: UserProfile
   balanceStore: BalanceState
+  transactionsStore: TransactionItem[]
 }>({
   userProfile: {
     firstName: '',
@@ -54,7 +66,59 @@ export const mainStore = reactive<{
       { date: '30.03', value: 20150 },
     ],
   },
+
+  transactionsStore: [
+    {
+      id: 1,
+      type: 'deposit',
+      amount: 12000,
+      currency: 'UAH',
+      date: '2026-03-01',
+      status: 'completed',
+    },
+    {
+      id: 2,
+      type: 'payment',
+      amount: 350,
+      currency: 'UAH',
+      date: '2026-03-03',
+      status: 'completed',
+    },
+    {
+      id: 3,
+      type: 'transfer',
+      amount: 4200,
+      currency: 'UAH',
+      date: '2026-03-08',
+      status: 'completed',
+    },
+    {
+      id: 4,
+      type: 'withdrawal',
+      amount: 1800,
+      currency: 'UAH',
+      date: '2026-03-10',
+      status: 'completed',
+    },
+    {
+      id: 5,
+      type: 'deposit',
+      amount: 5600,
+      currency: 'UAH',
+      date: '2026-03-14',
+      status: 'pending',
+    },
+    {
+      id: 6,
+      type: 'payment',
+      amount: 990,
+      currency: 'UAH',
+      date: '2026-03-18',
+      status: 'failed',
+    },
+  ],
 })
 
 export const userProfile = mainStore.userProfile
 export const balanceStore = mainStore.balanceStore
+export const transactionsStore = mainStore.transactionsStore
