@@ -4,6 +4,7 @@ import BalanceCard from '~/components/UserInformationComponents/BalanceCard.vue'
 import TransactionTotalCard from './UserInformationComponents/TransactionTotalCard.vue';
 import TransactionsCircleCard from './UserInformationComponents/TransactionsCircleCard.vue';
 import GoalTargetCard from './UserInformationComponents/GoalTargetCard.vue';
+import TrendingStocksCard from './UserInformationComponents/TrendingStocksCard.vue';
 </script>
 
 
@@ -14,9 +15,7 @@ import GoalTargetCard from './UserInformationComponents/GoalTargetCard.vue';
 </div>
 <TransactionsCircleCard/>-->
 <GoalTargetCard/>
-
-       
-
+<TrendingStocksCard/>
 </template>
 
 <style scoped>
