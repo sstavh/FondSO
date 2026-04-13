@@ -1,14 +1,16 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue'
 import PortfolioOverview from '../components/test.vue'
-import PortfolioHistory from  '../components/test.vue'
-import PortfolioSettings from  '../components/test.vue'
-import TradingSection from  '../components/test.vue'
+import PortfolioOverview2 from '../components/test.vue'
+import PortfolioHistory from '../components/test.vue'
+import PortfolioSettings from '../components/test.vue'
+import TradingSection from '../components/test.vue'
 import AccountPopup from '~/components/AccountPopup.vue'
 import { userProfile } from '~/data/userProfile'
 
 type ViewKey =
   | 'portfolio-overview'
+  | 'portfolio-overview-2'
   | 'portfolio-history'
   | 'portfolio-settings'
   | 'trading'
@@ -38,8 +40,9 @@ const closeAccountPopup = () => {
 }
 
 const currentComponent = computed(() => {
-  const map = {
+  const map: Record<ViewKey, any> = {
     'portfolio-overview': PortfolioOverview,
+    'portfolio-overview-2': PortfolioOverview2,
     'portfolio-history': PortfolioHistory,
     'portfolio-settings': PortfolioSettings,
     trading: TradingSection,
@@ -57,12 +60,22 @@ const currentComponent = computed(() => {
           <p class="sidebar-logo">FondSO</p>
 
           <ul class="nav-list">
-            <li class="nav-item" @click="goHome">
+            <li class="nav-item" :class="{ active: activeView === null }" @click="goHome">
               <div class="nav-item__left">
                 <span class="nav-icon">
                   <svg viewBox="0 0 24 24" fill="none">
-                    <path d="M3 10.5L12 3L21 10.5V20C21 20.5523 20.5523 21 20 21H4C3.44772 21 3 20.5523 3 20V10.5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-                    <path d="M9 21V14H15V21" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                    <path
+                      d="M3 10.5L12 3L21 10.5V20C21 20.5523 20.5523 21 20 21H4C3.44772 21 3 20.5523 3 20V10.5Z"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linejoin="round"
+                    />
+                    <path
+                      d="M9 21V14H15V21"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linejoin="round"
+                    />
                   </svg>
                 </span>
                 <span>Головна</span>
@@ -73,31 +86,98 @@ const currentComponent = computed(() => {
               <div class="nav-item__left">
                 <span class="nav-icon">
                   <svg viewBox="0 0 24 24" fill="none">
-                    <rect x="3" y="4" width="18" height="5" rx="1.5" stroke="currentColor" stroke-width="2"/>
-                    <rect x="3" y="15" width="18" height="5" rx="1.5" stroke="currentColor" stroke-width="2"/>
+                    <rect
+                      x="3"
+                      y="4"
+                      width="18"
+                      height="5"
+                      rx="1.5"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    />
+                    <rect
+                      x="3"
+                      y="15"
+                      width="18"
+                      height="5"
+                      rx="1.5"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    />
                   </svg>
                 </span>
                 <span>Портфоліо</span>
               </div>
+
               <span class="nav-arrow" :class="{ 'nav-arrow--open': isPortfolioOpen }">
                 <svg viewBox="0 0 24 24" fill="none">
-                  <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path
+                    d="M6 9L12 15L18 9"
+                    stroke="currentColor"
+                    stroke-width="2.2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
                 </svg>
               </span>
             </li>
 
             <ul v-if="isPortfolioOpen" class="subnav-list">
-              <li class="subnav-item" @click="selectView('portfolio-overview')">Огляд</li>
-              <li class="subnav-item" @click="selectView('portfolio-history')">Історія</li>
-              <li class="subnav-item" @click="selectView('portfolio-settings')">Налаштування</li>
+              <li
+                class="subnav-item"
+                :class="{ active: activeView === 'portfolio-overview' }"
+                @click="selectView('portfolio-overview')"
+              >
+                Огляд
+              </li>
+
+              <li
+                class="subnav-item"
+                :class="{ active: activeView === 'portfolio-overview-2' }"
+                @click="selectView('portfolio-overview-2')"
+              >
+                Огляд 2
+              </li>
+
+              <li
+                class="subnav-item"
+                :class="{ active: activeView === 'portfolio-history' }"
+                @click="selectView('portfolio-history')"
+              >
+                Історія
+              </li>
+
+              <li
+                class="subnav-item"
+                :class="{ active: activeView === 'portfolio-settings' }"
+                @click="selectView('portfolio-settings')"
+              >
+                Налаштування
+              </li>
             </ul>
 
-            <li class="nav-item" @click="selectView('trading')">
+            <li
+              class="nav-item"
+              :class="{ active: activeView === 'trading' }"
+              @click="selectView('trading')"
+            >
               <div class="nav-item__left">
                 <span class="nav-icon">
                   <svg viewBox="0 0 24 24" fill="none">
-                    <path d="M4 17L10 11L13 14L20 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M15 7H20V12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path
+                      d="M4 17L10 11L13 14L20 7"
+                      stroke="currentColor"
+                      stroke-width="2.2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                    <path
+                      d="M15 7H20V12"
+                      stroke="currentColor"
+                      stroke-width="2.2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
                   </svg>
                 </span>
                 <span>Трейдинг</span>
@@ -127,7 +207,13 @@ const currentComponent = computed(() => {
 
             <span class="account-arrow">
               <svg viewBox="0 0 24 24" fill="none">
-                <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path
+                  d="M6 9L12 15L18 9"
+                  stroke="currentColor"
+                  stroke-width="2.2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
               </svg>
             </span>
           </button>
@@ -196,7 +282,10 @@ const currentComponent = computed(() => {
   justify-content: space-between;
   color: var(--text-secondary);
   cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
   border: 1px solid transparent;
   background: transparent;
 }
@@ -204,6 +293,12 @@ const currentComponent = computed(() => {
 .nav-item:hover {
   background: var(--glass-bg);
   color: var(--text-primary);
+}
+
+.nav-item.active {
+  background: var(--glass-bg);
+  color: var(--text-primary);
+  border-color: var(--glass-border);
 }
 
 .nav-item__left {
@@ -268,10 +363,17 @@ const currentComponent = computed(() => {
   cursor: pointer;
   font-size: var(--text-base);
   font-weight: 500;
-  transition: background 0.2s ease, color 0.2s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
 }
 
 .subnav-item:hover {
+  background: var(--glass-bg);
+  color: var(--text-primary);
+}
+
+.subnav-item.active {
   background: var(--glass-bg);
   color: var(--text-primary);
 }

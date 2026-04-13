@@ -1,22 +1,26 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue'
-import PortfolioOverview from '../components/test.vue'
-import PortfolioHistory from '../components/test.vue'
-import PortfolioSettings from '../components/test.vue'
-import TradingSection from '../pages/login.vue'
+
+import HomeSection from './HomeSection.vue'
+import PortfolioOverview from './testComponents/PortfolioOverview.vue'
+import PortfolioOverview2 from './testComponents/PortfolioOverview.vue'
+import PortfolioHistory from './testComponents/PortfolioHistory.vue'
+import PortfolioSettings from './testComponents/PortfolioSettings.vue'
+import TradingSection from './testComponents/TradingSection.vue'
+import AccountPopup from '~/components/AccountPopup.vue'
+import { userProfile } from '~/data/userProfile'
 
 type ViewKey =
-  | 'portfolio-overview'
+  | 'home'
+  | 'balance'
+  | 'portfolio-overview-2'
   | 'portfolio-history'
-  | 'portfolio-settings'
+  | 'agreements'
   | 'trading'
 
 const isPortfolioOpen = ref(false)
 const isAccountPopupOpen = ref(false)
-const activeView = ref<ViewKey | null>(null)
-
-import { userProfile } from '~/data/userProfile'
-import AccountPopup from '~/components/AccountPopup.vue'
+const activeView = ref<ViewKey>('home')
 
 const togglePortfolio = () => {
   isPortfolioOpen.value = !isPortfolioOpen.value
@@ -27,7 +31,7 @@ const selectView = (view: ViewKey) => {
 }
 
 const goHome = () => {
-  activeView.value = null
+  activeView.value = 'home'
 }
 
 const openAccountPopup = () => {
@@ -39,14 +43,16 @@ const closeAccountPopup = () => {
 }
 
 const currentComponent = computed(() => {
-  const map = {
-    'portfolio-overview': PortfolioOverview,
+  const map: Record<ViewKey, any> = {
+    home: HomeSection,
+    balance: PortfolioOverview,
+    'portfolio-overview-2': PortfolioOverview2,
     'portfolio-history': PortfolioHistory,
-    'portfolio-settings': PortfolioSettings,
+    agreements: PortfolioSettings,
     trading: TradingSection,
   }
 
-  return activeView.value ? map[activeView.value] : null
+  return map[activeView.value]
 })
 </script>
 
@@ -58,12 +64,26 @@ const currentComponent = computed(() => {
           <p class="sidebar-logo">FondSO</p>
 
           <ul class="nav-list">
-            <li class="nav-item" @click="goHome">
+            <li
+              class="nav-item"
+              :class="{ active: activeView === 'home' }"
+              @click="goHome"
+            >
               <div class="nav-item__left">
                 <span class="nav-icon">
                   <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M3 10.5L12 3L21 10.5V20C21 20.5523 20.5523 21 20 21H4C3.44772 21 3 20.5523 3 20V10.5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-                    <path d="M9 21V14H15V21" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                    <path
+                      d="M3 10.5L12 3L21 10.5V20C21 20.5523 20.5523 21 20 21H4C3.44772 21 3 20.5523 3 20V10.5Z"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linejoin="round"
+                    />
+                    <path
+                      d="M9 21V14H15V21"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linejoin="round"
+                    />
                   </svg>
                 </span>
                 <span>Головна</span>
@@ -74,31 +94,98 @@ const currentComponent = computed(() => {
               <div class="nav-item__left">
                 <span class="nav-icon">
                   <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="3" y="4" width="18" height="5" rx="1.5" stroke="currentColor" stroke-width="2"/>
-                    <rect x="3" y="15" width="18" height="5" rx="1.5" stroke="currentColor" stroke-width="2"/>
+                    <rect
+                      x="3"
+                      y="4"
+                      width="18"
+                      height="5"
+                      rx="1.5"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    />
+                    <rect
+                      x="3"
+                      y="15"
+                      width="18"
+                      height="5"
+                      rx="1.5"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    />
                   </svg>
                 </span>
                 <span>Портфоліо</span>
               </div>
+
               <span class="nav-arrow" :class="{ 'nav-arrow--open': isPortfolioOpen }">
                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path
+                    d="M6 9L12 15L18 9"
+                    stroke="currentColor"
+                    stroke-width="2.2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
                 </svg>
               </span>
             </li>
 
             <ul v-if="isPortfolioOpen" class="subnav-list">
-              <li class="subnav-item" @click="selectView('portfolio-overview')">Огляд</li>
-              <li class="subnav-item" @click="selectView('portfolio-history')">Історія</li>
-              <li class="subnav-item" @click="selectView('portfolio-settings')">Налаштування</li>
+              <li
+                class="subnav-item"
+                :class="{ active: activeView === 'balance' }"
+                @click="selectView('balance')"
+              >
+                Баланс
+              </li>
+
+              <li
+                class="subnav-item"
+                :class="{ active: activeView === 'portfolio-overview-2' }"
+                @click="selectView('portfolio-overview-2')"
+              >
+                Огляд 2
+              </li>
+
+              <li
+                class="subnav-item"
+                :class="{ active: activeView === 'portfolio-history' }"
+                @click="selectView('portfolio-history')"
+              >
+                Історія
+              </li>
+
+              <li
+                class="subnav-item"
+                :class="{ active: activeView === 'agreements' }"
+                @click="selectView('agreements')"
+              >
+                Огуди
+              </li>
             </ul>
 
-            <li class="nav-item" @click="selectView('trading')">
+            <li
+              class="nav-item"
+              :class="{ active: activeView === 'trading' }"
+              @click="selectView('trading')"
+            >
               <div class="nav-item__left">
                 <span class="nav-icon">
                   <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M4 17L10 11L13 14L20 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M15 7H20V12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path
+                      d="M4 17L10 11L13 14L20 7"
+                      stroke="currentColor"
+                      stroke-width="2.2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                    <path
+                      d="M15 7H20V12"
+                      stroke="currentColor"
+                      stroke-width="2.2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
                   </svg>
                 </span>
                 <span>Трейдинг</span>
@@ -118,13 +205,23 @@ const currentComponent = computed(() => {
             </div>
 
             <div class="account-info">
-              <p class="account-name">{{ userProfile.firstName }} {{ userProfile.lastName }}</p>
-              <p class="account-email">{{ userProfile.email }}</p>
+              <p class="account-name">
+                {{ userProfile.firstName || 'Імʼя' }} {{ userProfile.lastName || 'Прізвище' }}
+              </p>
+              <p class="account-email">
+                {{ userProfile.email || 'email@example.com' }}
+              </p>
             </div>
 
             <span class="account-arrow">
               <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path
+                  d="M6 9L12 15L18 9"
+                  stroke="currentColor"
+                  stroke-width="2.2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
               </svg>
             </span>
           </button>
@@ -139,30 +236,31 @@ const currentComponent = computed(() => {
     />
 
     <main class="content-section">
-      <component :is="currentComponent" v-if="currentComponent" />
+      <component :is="currentComponent" />
     </main>
   </div>
 </template>
 
 <style scoped>
-
 .layout-shell {
-    position: fixed; /* або absolute */
-  z-index: 9999; 
-  min-height: 100vh;
+  height: 100vh;
   display: grid;
   grid-template-columns: 300px 1fr;
   background: var(--bg-main);
+  overflow: hidden;
 }
 
 .sidebar {
-  min-height: 100vh;
-  border-right: 1px solid var(--accents);
-  background: var( --glass-bg);
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  border-right: 1px solid var(--glass-border);
+  background: var(--bg-main);
+  overflow: hidden;
 }
 
 .sidebar-inner {
-  min-height: 850px;
+  height: 100vh;
   padding: 32px 20px 20px;
   display: flex;
   flex-direction: column;
@@ -204,6 +302,12 @@ const currentComponent = computed(() => {
 .nav-item:hover {
   background: var(--glass-bg);
   color: var(--text-primary);
+}
+
+.nav-item.active {
+  background: var(--glass-bg);
+  color: var(--text-primary);
+  border-color: var(--glass-border);
 }
 
 .nav-item__left {
@@ -272,6 +376,11 @@ const currentComponent = computed(() => {
 }
 
 .subnav-item:hover {
+  background: var(--glass-bg);
+  color: var(--text-primary);
+}
+
+.subnav-item.active {
   background: var(--glass-bg);
   color: var(--text-primary);
 }
@@ -352,21 +461,32 @@ const currentComponent = computed(() => {
 }
 
 .content-section {
-  padding: var(--space-xl);
   min-width: 0;
+  height: 100vh;
+  padding: 24px;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 @media (max-width: 900px) {
   .layout-shell {
     grid-template-columns: 1fr;
+    height: auto;
+    overflow: visible;
   }
 
   .sidebar {
-    min-height: auto;
+    position: relative;
+    height: auto;
   }
 
   .sidebar-inner {
-    min-height: auto;
+    height: auto;
+  }
+
+  .content-section {
+    height: auto;
+    overflow: visible;
   }
 }
 </style>
