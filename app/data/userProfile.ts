@@ -2,7 +2,7 @@ import { reactive } from 'vue'
 
 export type Currency = 'UAH' | 'USD' | 'EUR' | 'PLN'
 export type TransactionStatus = 'completed' | 'pending' | 'failed'
-export type TransactionType = 'deposit' | 'withdrawal' | 'transfer' | 'payment'
+export type TransactionType = 'buy' | 'sell'
 
 export interface UserProfile {
   firstName: string
@@ -30,6 +30,9 @@ export interface BalanceState {
 export interface TransactionItem {
   id: number
   type: TransactionType
+  assetName: string
+  ticker: string
+  quantity: number
   amount: number
   currency: Currency
   date: string
@@ -76,7 +79,10 @@ export const mainStore = reactive<{
   transactionsStore: [
     {
       id: 1,
-      type: 'deposit',
+      type: 'buy',
+      assetName: 'Apple',
+      ticker: 'AAPL',
+      quantity: 5,
       amount: 12000,
       currency: 'UAH',
       date: '2026-03-01',
@@ -84,15 +90,21 @@ export const mainStore = reactive<{
     },
     {
       id: 2,
-      type: 'payment',
-      amount: 350,
+      type: 'buy',
+      assetName: 'Tesla',
+      ticker: 'TSLA',
+      quantity: 2,
+      amount: 8350,
       currency: 'UAH',
       date: '2026-03-03',
-      status: 'completed',
+      status: 'pending',
     },
     {
       id: 3,
-      type: 'transfer',
+      type: 'sell',
+      assetName: 'NVIDIA',
+      ticker: 'NVDA',
+      quantity: 1,
       amount: 4200,
       currency: 'UAH',
       date: '2026-03-08',
@@ -100,33 +112,31 @@ export const mainStore = reactive<{
     },
     {
       id: 4,
-      type: 'withdrawal',
-      amount: 1800,
+      type: 'buy',
+      assetName: 'Amazon',
+      ticker: 'AMZN',
+      quantity: 3,
+      amount: 7800,
       currency: 'UAH',
       date: '2026-03-10',
-      status: 'completed',
+      status: 'failed',
     },
     {
       id: 5,
-      type: 'deposit',
-      amount: 5600,
+      type: 'buy',
+      assetName: 'Microsoft',
+      ticker: 'MSFT',
+      quantity: 4,
+      amount: 15600,
       currency: 'UAH',
       date: '2026-03-14',
-      status: 'pending',
-    },
-    {
-      id: 6,
-      type: 'payment',
-      amount: 990,
-      currency: 'UAH',
-      date: '2026-03-18',
-      status: 'failed',
+      status: 'completed',
     },
   ],
 
   goalStore: {
-    targetAmount: 50000,  // скільки хочеш заробити
-    earnedAmount: 20150,  // скільки вже зароблено
+    targetAmount: 50000,
+    earnedAmount: 20150,
   },
 })
 
