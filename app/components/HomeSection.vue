@@ -2,6 +2,7 @@
 
 import BalanceCard from '~/components/UserInformationComponents/BalanceCard.vue';
 import TransactionTotalCard from './UserInformationComponents/TransactionTotalCard.vue';
+import TransactionsCircleCard from './UserInformationComponents/TransactionsCircleCard.vue';
 </script>
 
 
@@ -10,6 +11,8 @@ import TransactionTotalCard from './UserInformationComponents/TransactionTotalCa
          <BalanceCard class="ttB"/>
         <TransactionTotalCard/>
 </div>
+<TransactionsCircleCard/>
+
        
 
 </template>
