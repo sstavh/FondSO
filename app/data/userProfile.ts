@@ -36,10 +36,16 @@ export interface TransactionItem {
   status: TransactionStatus
 }
 
+export interface GoalState {
+  targetAmount: number
+  earnedAmount: number
+}
+
 export const mainStore = reactive<{
   userProfile: UserProfile
   balanceStore: BalanceState
   transactionsStore: TransactionItem[]
+  goalStore: GoalState
 }>({
   userProfile: {
     firstName: '',
@@ -117,8 +123,14 @@ export const mainStore = reactive<{
       status: 'failed',
     },
   ],
+
+  goalStore: {
+    targetAmount: 50000,  // скільки хочеш заробити
+    earnedAmount: 20150,  // скільки вже зароблено
+  },
 })
 
 export const userProfile = mainStore.userProfile
 export const balanceStore = mainStore.balanceStore
 export const transactionsStore = mainStore.transactionsStore
+export const goalStore = mainStore.goalStore
