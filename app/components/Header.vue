@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 
 import HomeSection from './HomeSection.vue'
 import PortfolioOverview from './testComponents/PortfolioOverview.vue'
+import PortfolioOverview2 from './testComponents/PortfolioOverview.vue'
 import PortfolioHistory from './testComponents/PortfolioHistory.vue'
 import PortfolioSettings from './testComponents/PortfolioSettings.vue'
 import TradingSection from './testComponents/TradingSection.vue'
@@ -12,6 +13,7 @@ import { userProfile } from '~/data/userProfile'
 type ViewKey =
   | 'home'
   | 'portfolio-overview'
+  | 'portfolio-overview-2'
   | 'portfolio-history'
   | 'portfolio-settings'
   | 'trading'
@@ -44,6 +46,7 @@ const currentComponent = computed(() => {
   const map: Record<ViewKey, any> = {
     home: HomeSection,
     'portfolio-overview': PortfolioOverview,
+    'portfolio-overview-2': PortfolioOverview2,
     'portfolio-history': PortfolioHistory,
     'portfolio-settings': PortfolioSettings,
     trading: TradingSection,
@@ -69,8 +72,18 @@ const currentComponent = computed(() => {
               <div class="nav-item__left">
                 <span class="nav-icon">
                   <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M3 10.5L12 3L21 10.5V20C21 20.5523 20.5523 21 20 21H4C3.44772 21 3 20.5523 3 20V10.5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-                    <path d="M9 21V14H15V21" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                    <path
+                      d="M3 10.5L12 3L21 10.5V20C21 20.5523 20.5523 21 20 21H4C3.44772 21 3 20.5523 3 20V10.5Z"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linejoin="round"
+                    />
+                    <path
+                      d="M9 21V14H15V21"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linejoin="round"
+                    />
                   </svg>
                 </span>
                 <span>Головна</span>
@@ -81,8 +94,24 @@ const currentComponent = computed(() => {
               <div class="nav-item__left">
                 <span class="nav-icon">
                   <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="3" y="4" width="18" height="5" rx="1.5" stroke="currentColor" stroke-width="2"/>
-                    <rect x="3" y="15" width="18" height="5" rx="1.5" stroke="currentColor" stroke-width="2"/>
+                    <rect
+                      x="3"
+                      y="4"
+                      width="18"
+                      height="5"
+                      rx="1.5"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    />
+                    <rect
+                      x="3"
+                      y="15"
+                      width="18"
+                      height="5"
+                      rx="1.5"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    />
                   </svg>
                 </span>
                 <span>Портфоліо</span>
@@ -90,7 +119,13 @@ const currentComponent = computed(() => {
 
               <span class="nav-arrow" :class="{ 'nav-arrow--open': isPortfolioOpen }">
                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path
+                    d="M6 9L12 15L18 9"
+                    stroke="currentColor"
+                    stroke-width="2.2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
                 </svg>
               </span>
             </li>
@@ -102,6 +137,14 @@ const currentComponent = computed(() => {
                 @click="selectView('portfolio-overview')"
               >
                 Огляд
+              </li>
+
+              <li
+                class="subnav-item"
+                :class="{ active: activeView === 'portfolio-overview-2' }"
+                @click="selectView('portfolio-overview-2')"
+              >
+                Огляд 2
               </li>
 
               <li
@@ -129,8 +172,20 @@ const currentComponent = computed(() => {
               <div class="nav-item__left">
                 <span class="nav-icon">
                   <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M4 17L10 11L13 14L20 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M15 7H20V12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path
+                      d="M4 17L10 11L13 14L20 7"
+                      stroke="currentColor"
+                      stroke-width="2.2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                    <path
+                      d="M15 7H20V12"
+                      stroke="currentColor"
+                      stroke-width="2.2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
                   </svg>
                 </span>
                 <span>Трейдинг</span>
@@ -160,7 +215,13 @@ const currentComponent = computed(() => {
 
             <span class="account-arrow">
               <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path
+                  d="M6 9L12 15L18 9"
+                  stroke="currentColor"
+                  stroke-width="2.2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
               </svg>
             </span>
           </button>
