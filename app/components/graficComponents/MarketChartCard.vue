@@ -100,6 +100,9 @@ const formatPrice = (value: number) => {
   border: 1px solid var(--glass-border);
   background: #0f1117;
   box-shadow: var(--shadow-glass);
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease;
 }
 
 .market-chart-card__header {
