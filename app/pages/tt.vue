@@ -1,25 +1,20 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import StocksHoverPreview from '../components/choicEofGraphicsComponent/StocksHoverPreview.vue'
 import MarketStockChart from '../components/graficComponents/MarketChartCard.vue'
 import MarketStatsBar from '../components/graficComponents/MarketStatsBar.vue'
-import type { MarketCompany } from '~/data/marketCompanies'
 import { marketCompanies } from '~/data/marketCompanies'
 
-const selectedCompany = ref<MarketCompany>(marketCompanies[0])
-
-const handleCompanyUpdate = (company: MarketCompany) => {
-  selectedCompany.value = company
-}
+const selectedCompany = marketCompanies[0] // 🔥 ПРОСТО ТЕСТ
 </script>
 
 <template>
   <div class="page-wrap">
-    <StocksHoverPreview @update:company="handleCompanyUpdate" />
 
+    <!-- 🔥 ПОЛОСКА -->
     <MarketStatsBar :company="selectedCompany" />
 
+    <!-- 🔥 ГРАФІК -->
     <MarketStockChart :company="selectedCompany" />
+
   </div>
 </template>
 
