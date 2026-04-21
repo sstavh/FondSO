@@ -4,6 +4,7 @@ import { useRoute } from 'vue-router'
 import AdvancedMarketChart from '../../components/graficComponents/AdvancedMarketChart.vue'
 import type { MarketCompany } from '~/data/marketCompanies'
 import { marketCompanies } from '~/data/marketCompanies'
+import StocksTickerTape from '~/components/graficComponents/StocksTickerTape.vue'
 
 const route = useRoute()
 
@@ -18,6 +19,7 @@ const company = computed<MarketCompany>(() => {
 </script>
 
 <template>
+  <StocksTickerTape/>
   <div class="stock-page">
     <div class="stock-page__head">
       <p class="stock-page__label">{{ company.ticker }}</p>
