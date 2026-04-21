@@ -4,6 +4,7 @@ import StocksHoverPreview from '../components/choicEofGraphicsComponent/StocksHo
 import MarketStatsBar from '../components/graficComponents/MarketStatsBar.vue'
 import type { MarketCompany } from '~/data/marketCompanies'
 import { marketCompanies } from '~/data/marketCompanies'
+import HeaderGraphs from '~/components/HeaderGraphs.vue'
 
 const selectedCompany = ref<MarketCompany>(marketCompanies[0]!)
 
@@ -13,6 +14,7 @@ const handleCompanyUpdate = (company: MarketCompany) => {
 </script>
 
 <template>
+  <HeaderGraphs/>
   <div class="page-wrap">
     <MarketStatsBar :company="selectedCompany" />
 
