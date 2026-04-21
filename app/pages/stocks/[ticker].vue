@@ -1,17 +1,18 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
-import MarketStockChart from '../../components/graficComponents/MarketChartCard.vue'
+import AdvancedMarketChart from '../../components/graficComponents/AdvancedMarketChart.vue'
+import type { MarketCompany } from '~/data/marketCompanies'
 import { marketCompanies } from '~/data/marketCompanies'
 
 const route = useRoute()
 
-const company = computed(() => {
+const company = computed<MarketCompany>(() => {
   const ticker = String(route.params.ticker).toUpperCase()
 
   return (
     marketCompanies.find((item) => item.ticker === ticker) ??
-    marketCompanies[0]
+    marketCompanies[0]!
   )
 })
 </script>
@@ -23,7 +24,7 @@ const company = computed(() => {
       <h1 class="stock-page__title">{{ company.name }}</h1>
     </div>
 
-    <MarketStockChart :company="company" />
+    <AdvancedMarketChart :company="company" />
   </div>
 </template>
 
@@ -32,6 +33,7 @@ const company = computed(() => {
   display: flex;
   flex-direction: column;
   gap: 24px;
+  padding: 24px;
 }
 
 .stock-page__label {
