@@ -92,7 +92,7 @@ const goToAccount = () => {
 }
 
 .header-graphs {
-    margin-bottom: 25px;
+
   width: 100%;
   position: sticky;
   top: 0;
