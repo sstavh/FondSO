@@ -16,6 +16,8 @@ const {
   paddingRight,
   paddingTop,
   paddingBottom,
+  indicatorTop,
+  indicatorPlotHeight,
   linePath,
   areaPath,
   gridLines,
@@ -23,8 +25,15 @@ const {
   currentPrice,
   priceChange,
   priceChangePercent,
+  highValue,
+  lowValue,
+  averageValue,
+  volatilityPercent,
   ma7Path,
-  ma14Path,
+  ma25Path,
+  bollingerUpperPath,
+  bollingerLowerPath,
+  rsiPath,
   lastPriceY,
   zoom,
   timeframe,
@@ -64,6 +73,13 @@ const formatPrice = (value: number) => {
     maximumFractionDigits: 2,
   }).format(value)
 }
+
+const chartCursor = computed(() => {
+  if (drawMode.value === 'trend') return 'crosshair'
+  if (drawMode.value === 'horizontal') return 'row-resize'
+  if (drawMode.value === 'vertical') return 'col-resize'
+  return isPanning.value ? 'grabbing' : 'grab'
+})
 
 const getLocalPoint = (event: MouseEvent | WheelEvent) => {
   if (!svgRef.value) return { x: 0, y: 0 }
@@ -187,29 +203,56 @@ onBeforeUnmount(() => {
       </div>
     </div>
 
+    <div class="advanced-chart__summary">
+      <div class="summary-card">
+        <span class="summary-card__label">High</span>
+        <strong class="summary-card__value">{{ formatPrice(highValue) }}</strong>
+      </div>
+
+      <div class="summary-card">
+        <span class="summary-card__label">Low</span>
+        <strong class="summary-card__value">{{ formatPrice(lowValue) }}</strong>
+      </div>
+
+      <div class="summary-card">
+        <span class="summary-card__label">Average</span>
+        <strong class="summary-card__value">{{ formatPrice(averageValue) }}</strong>
+      </div>
+
+      <div class="summary-card">
+        <span class="summary-card__label">Volatility</span>
+        <strong class="summary-card__value">{{ volatilityPercent.toFixed(2) }}%</strong>
+      </div>
+    </div>
+
     <div class="advanced-chart__toolbar">
-      <div class="toolbar-group">
+      <div class="toolbar-section">
+        <span class="toolbar-section__label">Період</span>
         <button
           v-for="item in ['1D', '1W', '1M', '3M']"
           :key="item"
           class="toolbar-btn"
           :class="{ active: timeframe === item }"
+          :title="`Показати ${item}`"
           @click="setTimeframe(item as '1D' | '1W' | '1M' | '3M')"
         >
           {{ item }}
         </button>
       </div>
 
-      <div class="toolbar-group">
-        <button class="toolbar-btn" @click="zoomOut">-</button>
-        <button class="toolbar-btn" @click="zoomIn">+</button>
-        <button class="toolbar-btn" @click="resetView">Reset</button>
+      <div class="toolbar-section">
+        <span class="toolbar-section__label">Навігація</span>
+        <button class="toolbar-btn" title="Зменшити" @click="zoomOut">-</button>
+        <button class="toolbar-btn" title="Збільшити" @click="zoomIn">+</button>
+        <button class="toolbar-btn" title="Скинути (R)" @click="resetView">Reset</button>
       </div>
 
-      <div class="toolbar-group">
+      <div class="toolbar-section">
+        <span class="toolbar-section__label">Малювання</span>
         <button
           class="toolbar-btn"
           :class="{ active: drawMode === 'trend' }"
+          title="Лінія тренду (L)"
           @click="setDrawMode('trend')"
         >
           Лінія
@@ -218,6 +261,7 @@ onBeforeUnmount(() => {
         <button
           class="toolbar-btn"
           :class="{ active: drawMode === 'horizontal' }"
+          title="Горизонтальна лінія (H)"
           @click="setDrawMode('horizontal')"
         >
           Горизонталь
@@ -226,19 +270,27 @@ onBeforeUnmount(() => {
         <button
           class="toolbar-btn"
           :class="{ active: drawMode === 'vertical' }"
+          title="Вертикальна лінія (V)"
           @click="setDrawMode('vertical')"
         >
           Вертикаль
         </button>
 
-        <button class="toolbar-btn" @click="removeLastDrawing">Назад</button>
-        <button class="toolbar-btn" @click="clearDrawings">Очистити</button>
+        <button class="toolbar-btn" title="Видалити останню" @click="removeLastDrawing">
+          Назад
+        </button>
+
+        <button class="toolbar-btn" title="Очистити все (C)" @click="clearDrawings">
+          Очистити
+        </button>
       </div>
 
-      <div class="toolbar-group">
+      <div class="toolbar-section">
+        <span class="toolbar-section__label">Режими</span>
         <button
           class="toolbar-btn"
           :class="{ active: isLive }"
+          title="Live режим"
           @click="toggleLive"
         >
           Live
@@ -247,6 +299,7 @@ onBeforeUnmount(() => {
         <button
           class="toolbar-btn"
           :class="{ active: isFullscreen }"
+          title="На весь екран (F)"
           @click="toggleFullscreen"
         >
           Fullscreen
@@ -256,25 +309,20 @@ onBeforeUnmount(() => {
       <span class="toolbar-zoom">Zoom: {{ zoom.toFixed(2) }}x</span>
     </div>
 
-    <div class="advanced-chart__hotkeys">
-      R — reset · L — trend · H — horizontal · V — vertical · C — clear · F — fullscreen · Backspace — delete last
+    <div class="advanced-chart__footer-hints">
+      <span>Колесо миші — zoom</span>
+      <span>Drag — переміщення</span>
+      <span>Dbl click — reset</span>
+      <span>L / H / V — інструменти</span>
+      <span>Backspace — видалити останню</span>
     </div>
 
     <div class="advanced-chart__legend">
-      <span class="legend-item">
-        <span class="legend-dot legend-dot--price"></span>
-        Price
-      </span>
-
-      <span class="legend-item">
-        <span class="legend-dot legend-dot--ma7"></span>
-        MA7
-      </span>
-
-      <span class="legend-item">
-        <span class="legend-dot legend-dot--ma14"></span>
-        MA14
-      </span>
+      <span class="legend-item"><span class="legend-dot legend-dot--price"></span>Price</span>
+      <span class="legend-item"><span class="legend-dot legend-dot--ma7"></span>MA7</span>
+      <span class="legend-item"><span class="legend-dot legend-dot--ma25"></span>MA25</span>
+      <span class="legend-item"><span class="legend-dot legend-dot--bb"></span>Bollinger</span>
+      <span class="legend-item"><span class="legend-dot legend-dot--rsi"></span>RSI</span>
     </div>
 
     <div class="advanced-chart__body">
@@ -283,6 +331,7 @@ onBeforeUnmount(() => {
         class="advanced-chart__svg"
         :viewBox="`0 0 ${chartWidth} ${chartHeight}`"
         preserveAspectRatio="none"
+        :style="{ cursor: chartCursor }"
         @mousedown="handleMouseDown"
         @mousemove="handleMouseMove"
         @mouseup="handleMouseUp"
@@ -309,7 +358,7 @@ onBeforeUnmount(() => {
 
         <text
           v-for="line in gridLines"
-          :key="`label-${line.y}`"
+          :key="`price-${line.y}`"
           :x="chartWidth - paddingRight + 8"
           :y="line.y + 4"
           class="price-label"
@@ -318,9 +367,11 @@ onBeforeUnmount(() => {
         </text>
 
         <path :d="areaPath" fill="url(#advancedChartFill)" />
+        <path :d="bollingerUpperPath" class="bb-line" />
+        <path :d="bollingerLowerPath" class="bb-line" />
         <path :d="linePath" class="chart-line" />
         <path :d="ma7Path" class="ma-line ma-line--ma7" />
-        <path :d="ma14Path" class="ma-line ma-line--ma14" />
+        <path :d="ma25Path" class="ma-line ma-line--ma25" />
 
         <line
           :x1="paddingLeft"
@@ -347,6 +398,48 @@ onBeforeUnmount(() => {
           :y2="lastPriceY"
           class="last-price-line"
         />
+
+        <text
+          :x="chartWidth - paddingRight + 8"
+          :y="lastPriceY + 4"
+          class="last-price-label"
+        >
+          {{ currentPrice.toFixed(2) }}
+        </text>
+
+        <line
+          :x1="paddingLeft"
+          :y1="indicatorTop"
+          :x2="chartWidth - paddingRight"
+          :y2="indicatorTop"
+          class="indicator-separator"
+        />
+
+        <line
+          :x1="paddingLeft"
+          :y1="indicatorTop + indicatorPlotHeight * 0.3"
+          :x2="chartWidth - paddingRight"
+          :y2="indicatorTop + indicatorPlotHeight * 0.3"
+          class="rsi-guide"
+        />
+
+        <line
+          :x1="paddingLeft"
+          :y1="indicatorTop + indicatorPlotHeight * 0.7"
+          :x2="chartWidth - paddingRight"
+          :y2="indicatorTop + indicatorPlotHeight * 0.7"
+          class="rsi-guide"
+        />
+
+        <path :d="rsiPath" class="rsi-line" />
+
+        <text
+          :x="chartWidth - paddingRight + 8"
+          :y="indicatorTop + 14"
+          class="indicator-label"
+        >
+          RSI
+        </text>
 
         <line
           v-for="shape in drawings"
@@ -387,6 +480,13 @@ onBeforeUnmount(() => {
       </div>
 
       <div
+        class="price-badge"
+        :style="{ top: `${lastPriceY}px` }"
+      >
+        {{ currentPrice.toFixed(2) }}
+      </div>
+
+      <div
         v-if="hoverPoint && hover.visible"
         class="chart-tooltip"
         :style="{
@@ -397,6 +497,8 @@ onBeforeUnmount(() => {
         <p class="chart-tooltip__title">{{ company.ticker }}</p>
         <p class="chart-tooltip__row">Час: {{ hoverPoint.time }}</p>
         <p class="chart-tooltip__row">Ціна: {{ formatPrice(hoverPoint.value) }}</p>
+        <p class="chart-tooltip__row">High: {{ formatPrice(highValue) }}</p>
+        <p class="chart-tooltip__row">Low: {{ formatPrice(lowValue) }}</p>
       </div>
     </div>
   </section>
@@ -405,7 +507,7 @@ onBeforeUnmount(() => {
 <style scoped>
 .advanced-chart {
   width: 100%;
-  padding: 24px;
+  padding: 14px;
   border-radius: var(--radius-lg);
   border: 1px solid var(--glass-border);
   background: #0f1117;
@@ -416,20 +518,20 @@ onBeforeUnmount(() => {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 20px;
-  margin-bottom: 20px;
+  gap: 16px;
+  margin-bottom: 14px;
 }
 
 .advanced-chart__ticker {
-  margin: 0 0 6px;
+  margin: 0 0 4px;
   color: var(--text-secondary);
-  font-size: var(--text-sm);
+  font-size: 12px;
 }
 
 .advanced-chart__title {
   margin: 0;
   color: var(--text-primary);
-  font-size: 28px;
+  font-size: 22px;
   font-weight: 800;
 }
 
@@ -438,84 +540,135 @@ onBeforeUnmount(() => {
 }
 
 .advanced-chart__price {
-  margin: 0 0 6px;
+  margin: 0 0 4px;
   color: var(--text-primary);
-  font-size: 30px;
+  font-size: 24px;
   font-weight: 800;
 }
 
 .advanced-chart__change {
   margin: 0;
   color: var(--accent);
-  font-size: var(--text-sm);
+  font-size: 12px;
   font-weight: 600;
 }
 
-.advanced-chart__toolbar {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-bottom: 10px;
+.advanced-chart__summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
 }
 
-.toolbar-group {
+.summary-card {
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.summary-card__label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+
+.summary-card__value {
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.advanced-chart__toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 8;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 10px;
+  padding: 8px 0;
+  background: #0f1117;
+}
+
+.toolbar-section {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.toolbar-section__label {
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  margin-right: 2px;
+  white-space: nowrap;
 }
 
 .toolbar-btn {
-  min-height: 42px;
-  padding: 0 14px;
-  border-radius: 12px;
+  min-height: 34px;
+  padding: 0 10px;
+  border-radius: 9px;
   border: 1px solid var(--glass-border);
   background: var(--glass-bg);
   color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 600;
   cursor: pointer;
   transition: 0.2s ease;
 }
 
 .toolbar-btn:hover {
   border-color: var(--accent);
+  transform: translateY(-1px);
 }
 
 .toolbar-btn.active {
   background: var(--accent);
-  border-color: var(--accent);
   color: white;
+  border-color: var(--accent);
 }
 
 .toolbar-zoom {
   color: var(--text-secondary);
-  font-size: var(--text-sm);
+  font-size: 11px;
   margin-left: auto;
+  align-self: center;
 }
 
-.advanced-chart__hotkeys {
-  margin-bottom: 14px;
+.advanced-chart__footer-hints {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 10px;
   color: var(--text-secondary);
-  font-size: 12px;
+  font-size: 11px;
 }
 
 .advanced-chart__legend {
   display: flex;
   align-items: center;
-  gap: 18px;
-  margin-bottom: 14px;
+  gap: 14px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
 }
 
 .legend-item {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   color: var(--text-secondary);
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .legend-dot {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
 }
 
@@ -527,24 +680,31 @@ onBeforeUnmount(() => {
   background: #22c55e;
 }
 
-.legend-dot--ma14 {
+.legend-dot--ma25 {
   background: #f59e0b;
+}
+
+.legend-dot--bb {
+  background: #60a5fa;
+}
+
+.legend-dot--rsi {
+  background: #f43f5e;
 }
 
 .advanced-chart__body {
   position: relative;
   width: 100%;
   overflow: hidden;
-  border-radius: 20px;
+  border-radius: 16px;
   border: 1px solid rgba(255,255,255,0.06);
   background: #090b12;
 }
 
 .advanced-chart__svg {
   width: 100%;
-  height: 560px;
+  height: 460px;
   display: block;
-  cursor: crosshair;
 }
 
 .grid-line {
@@ -552,22 +712,23 @@ onBeforeUnmount(() => {
   stroke-width: 1;
 }
 
-.price-label {
+.price-label,
+.indicator-label {
   fill: var(--text-secondary);
-  font-size: 12px;
+  font-size: 11px;
 }
 
 .chart-line {
   fill: none;
   stroke: var(--accent);
-  stroke-width: 3;
+  stroke-width: 2.5;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 
 .ma-line {
   fill: none;
-  stroke-width: 2;
+  stroke-width: 1.8;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
@@ -576,8 +737,30 @@ onBeforeUnmount(() => {
   stroke: #22c55e;
 }
 
-.ma-line--ma14 {
+.ma-line--ma25 {
   stroke: #f59e0b;
+}
+
+.bb-line {
+  fill: none;
+  stroke: rgba(96, 165, 250, 0.8);
+  stroke-width: 1.2;
+  stroke-dasharray: 8 6;
+}
+
+.rsi-line {
+  fill: none;
+  stroke: #f43f5e;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.rsi-guide,
+.indicator-separator {
+  stroke: rgba(255, 255, 255, 0.1);
+  stroke-width: 1;
+  stroke-dasharray: 6 6;
 }
 
 .crosshair-line {
@@ -592,13 +775,19 @@ onBeforeUnmount(() => {
 
 .last-price-line {
   stroke: rgba(124, 58, 237, 0.55);
-  stroke-width: 1.5;
+  stroke-width: 1.2;
   stroke-dasharray: 10 6;
+}
+
+.last-price-label {
+  fill: #b794ff;
+  font-size: 11px;
+  font-weight: 700;
 }
 
 .draw-line {
   stroke: #facc15;
-  stroke-width: 2.5;
+  stroke-width: 2;
   stroke-linecap: round;
 }
 
@@ -609,26 +798,39 @@ onBeforeUnmount(() => {
 .hover-point {
   fill: white;
   stroke: var(--accent);
-  stroke-width: 3;
+  stroke-width: 2.5;
 }
 
 .time-labels {
   display: flex;
   justify-content: space-between;
   gap: 8px;
-  padding: 10px 16px 14px;
+  padding: 8px 14px 10px;
 }
 
 .time-label {
   color: var(--text-secondary);
-  font-size: 12px;
+  font-size: 11px;
+}
+
+.price-badge {
+  position: absolute;
+  right: 8px;
+  transform: translateY(-50%);
+  padding: 5px 8px;
+  border-radius: 8px;
+  background: var(--accent);
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  box-shadow: var(--shadow-glass);
 }
 
 .chart-tooltip {
   position: absolute;
-  min-width: 170px;
-  padding: 12px 14px;
-  border-radius: 14px;
+  min-width: 180px;
+  padding: 10px 12px;
+  border-radius: 12px;
   border: 1px solid var(--glass-border);
   background: rgba(15, 17, 23, 0.96);
   box-shadow: var(--shadow-glass);
@@ -636,22 +838,22 @@ onBeforeUnmount(() => {
 }
 
 .chart-tooltip__title {
-  margin: 0 0 8px;
+  margin: 0 0 6px;
   color: var(--text-primary);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
 }
 
 .chart-tooltip__row {
   margin: 0;
   color: var(--text-secondary);
-  font-size: 13px;
-  line-height: 1.5;
+  font-size: 12px;
+  line-height: 1.45;
 }
 
 @media (max-width: 900px) {
   .advanced-chart {
-    padding: 16px;
+    padding: 12px;
   }
 
   .advanced-chart__top {
@@ -662,17 +864,17 @@ onBeforeUnmount(() => {
     text-align: left;
   }
 
+  .advanced-chart__summary {
+    grid-template-columns: 1fr 1fr;
+  }
+
   .advanced-chart__svg {
-    height: 420px;
+    height: 400px;
   }
 
   .toolbar-zoom {
     width: 100%;
     margin-left: 0;
-  }
-
-  .advanced-chart__legend {
-    flex-wrap: wrap;
   }
 }
 </style>
