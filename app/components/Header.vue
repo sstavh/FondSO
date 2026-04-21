@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue'
+import { useRoute } from 'vue-router'
 
 import HomeSection from './HomeSection.vue'
 import PortfolioOverview from './testComponents/PortfolioOverview.vue'
@@ -18,9 +19,31 @@ type ViewKey =
   | 'agreements'
   | 'trading'
 
+const route = useRoute()
+
 const isPortfolioOpen = ref(false)
 const isAccountPopupOpen = ref(false)
 const activeView = ref<ViewKey>('home')
+
+const startView = route.query.view as ViewKey
+const shouldOpenAccount = route.query.account === 'open'
+
+if (startView) {
+  activeView.value = startView
+
+  if (
+    startView === 'balance' ||
+    startView === 'portfolio-overview-2' ||
+    startView === 'portfolio-history' ||
+    startView === 'agreements'
+  ) {
+    isPortfolioOpen.value = true
+  }
+}
+
+if (shouldOpenAccount) {
+  isAccountPopupOpen.value = true
+}
 
 const togglePortfolio = () => {
   isPortfolioOpen.value = !isPortfolioOpen.value
@@ -55,7 +78,6 @@ const currentComponent = computed(() => {
   return map[activeView.value]
 })
 </script>
-
 <template>
   <div class="layout-shell">
     <aside class="sidebar">
