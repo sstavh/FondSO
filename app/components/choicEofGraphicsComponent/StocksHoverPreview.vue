@@ -3,6 +3,7 @@ import { computed, ref, watch, onMounted } from 'vue'
 import { NuxtLink } from '#components'
 import type { MarketCompany } from '~/data/marketCompanies'
 import { marketCompanies } from '~/data/marketCompanies'
+import MarketStockChart from '../graficComponents/MarketChartCard.vue'
 
 const props = withDefaults(
   defineProps<{
@@ -18,28 +19,51 @@ const emit = defineEmits<{
 }>()
 
 const hoveredCompanyId = ref<number>(props.companies[0]?.id ?? 1)
+const visibleCompanyId = ref<number>(props.companies[0]?.id ?? 1)
+const isChartVisible = ref(true)
 
-const previewCompany = computed(() => {
+let hoverTimer: ReturnType<typeof setTimeout> | null = null
+
+const hoveredCompany = computed(() => {
   return (
     props.companies.find((company) => company.id === hoveredCompanyId.value) ??
-    props.companies[0]
+    props.companies[0]!
+  )
+})
+
+const visibleCompany = computed(() => {
+  return (
+    props.companies.find((company) => company.id === visibleCompanyId.value) ??
+    props.companies[0]!
   )
 })
 
 const onHoverCompany = (companyId: number) => {
+  if (hoveredCompanyId.value === companyId) return
   hoveredCompanyId.value = companyId
 }
 
-watch(previewCompany, (company) => {
-  if (company) {
-    emit('update:company', company)
+watch(hoveredCompanyId, (newId) => {
+  if (newId === visibleCompanyId.value) return
+
+  if (hoverTimer) {
+    clearTimeout(hoverTimer)
   }
+
+  isChartVisible.value = false
+
+  hoverTimer = setTimeout(() => {
+    visibleCompanyId.value = newId
+    emit('update:company', visibleCompany.value)
+
+    requestAnimationFrame(() => {
+      isChartVisible.value = true
+    })
+  }, 180)
 })
 
 onMounted(() => {
-  if (previewCompany.value) {
-    emit('update:company', previewCompany.value)
-  }
+  emit('update:company', visibleCompany.value)
 })
 </script>
 
@@ -56,11 +80,11 @@ onMounted(() => {
           v-for="company in companies"
           :key="company.id"
           class="stock-item"
-          :class="{ active: previewCompany?.id === company.id }"
+          :class="{ active: visibleCompany.id === company.id || hoveredCompany.id === company.id }"
           :to="`/stocks/${company.ticker.toLowerCase()}`"
           @mouseenter="onHoverCompany(company.id)"
         >
-          <div class="stock-item__left">
+          <div class="stock-item__left-row">
             <div class="stock-item__logo-wrap">
               <img
                 :src="company.logo"
@@ -89,14 +113,43 @@ onMounted(() => {
         </NuxtLink>
       </div>
     </div>
+
+    <div class="stocks-preview__right">
+      <div
+        class="stocks-preview__chart-box"
+        :class="{ 'stocks-preview__chart-box--visible': isChartVisible }"
+      >
+        <div class="stocks-preview__chart-head">
+          <div class="stocks-preview__chart-brand">
+            <img
+              :src="visibleCompany.logo"
+              :alt="visibleCompany.name"
+              class="stocks-preview__chart-logo"
+            />
+
+            <div>
+              <p class="stocks-preview__chart-label">{{ visibleCompany.ticker }}</p>
+              <h3 class="stocks-preview__chart-title">{{ visibleCompany.name }}</h3>
+            </div>
+          </div>
+        </div>
+
+        <MarketStockChart :key="visibleCompany.id" :company="visibleCompany" />
+      </div>
+    </div>
   </section>
 </template>
 
 <style scoped>
-.stocks-preview__left {
-  height: 500px;
-  display: flex;
-  flex-direction: column;
+.stocks-preview {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 24px;
+  min-width: 0;
+}
+
+.stocks-preview__left,
+.stocks-preview__right {
   min-width: 0;
   padding: 20px;
   border-radius: var(--radius-lg);
@@ -105,18 +158,26 @@ onMounted(() => {
   box-shadow: var(--shadow-glass);
 }
 
+.stocks-preview__left {
+  height: 500px;
+  display: flex;
+  flex-direction: column;
+}
+
 .stocks-preview__left-head {
   flex-shrink: 0;
   margin-bottom: 14px;
 }
 
-.stocks-preview__label {
+.stocks-preview__label,
+.stocks-preview__chart-label {
   margin: 0 0 6px;
   color: var(--text-secondary);
   font-size: var(--text-sm);
 }
 
-.stocks-preview__title {
+.stocks-preview__title,
+.stocks-preview__chart-title {
   margin: 0;
   color: var(--text-primary);
   font-size: var(--text-lg);
@@ -132,6 +193,15 @@ onMounted(() => {
   gap: 10px;
 }
 
+.stocks-preview__list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.stocks-preview__list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+}
+
 .stock-item {
   display: flex;
   align-items: center;
@@ -143,7 +213,11 @@ onMounted(() => {
   background: rgba(255, 255, 255, 0.03);
   color: inherit;
   text-decoration: none;
-  transition: 0.22s ease;
+  transition:
+    transform 0.22s ease,
+    background 0.22s ease,
+    border-color 0.22s ease,
+    box-shadow 0.22s ease;
 }
 
 .stock-item:hover,
@@ -151,9 +225,10 @@ onMounted(() => {
   background: var(--accent-light);
   border-color: rgba(124, 58, 237, 0.3);
   transform: translateX(4px);
+  box-shadow: 0 10px 24px rgba(124, 58, 237, 0.08);
 }
 
-.stock-item__left {
+.stock-item__left-row {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -169,14 +244,18 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
   flex-shrink: 0;
+  overflow: hidden;
 }
 
 .stock-item__logo {
   width: 26px;
   height: 26px;
   object-fit: contain;
+}
+
+.stock-item__info {
+  min-width: 0;
 }
 
 .stock-item__name {
@@ -197,5 +276,53 @@ onMounted(() => {
   height: 20px;
   color: var(--text-secondary);
   flex-shrink: 0;
+}
+
+.stock-item__arrow svg {
+  width: 20px;
+  height: 20px;
+}
+
+.stocks-preview__right {
+  overflow: hidden;
+}
+
+.stocks-preview__chart-box {
+  opacity: 0;
+  transform: translateY(10px) scale(0.985);
+  transition:
+    opacity 0.28s ease,
+    transform 0.28s ease;
+}
+
+.stocks-preview__chart-box--visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.stocks-preview__chart-head {
+  margin-bottom: 12px;
+}
+
+.stocks-preview__chart-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.stocks-preview__chart-logo {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  padding: 6px;
+  border: 1px solid var(--glass-border);
+}
+
+@media (max-width: 1100px) {
+  .stocks-preview {
+    grid-template-columns: 1fr;
+  }
 }
 </style>
