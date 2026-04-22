@@ -1,14 +1,16 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
 import HomeSection from './HomeSection.vue'
-import PortfolioOverview from './testComponents/PortfolioOverview.vue'
-import PortfolioOverview2 from './testComponents/PortfolioOverview.vue'
+import PortfolioOverview from './testComponents/PortfolioBalans.vue'
+import PortfolioOverview2 from './testComponents/PortfolioTarget.vue'
 import PortfolioHistory from './testComponents/PortfolioHistory.vue'
 import PortfolioSettings from './testComponents/PortfolioSettings.vue'
 import TradingSection from './testComponents/TradingSection.vue'
 import AccountPopup from '~/components/AccountPopup.vue'
+import RefillBalancePopup from '~/components/RefillBalancePopup.vue'
+import WithdrawBalancePopup from '~/components/WithdrawBalancePopup.vue'
 import { userProfile } from '~/data/userProfile'
 
 type ViewKey =
@@ -20,9 +22,12 @@ type ViewKey =
   | 'trading'
 
 const route = useRoute()
+const router = useRouter()
 
 const isPortfolioOpen = ref(false)
 const isAccountPopupOpen = ref(false)
+const isRefillPopupOpen = ref(false)
+const isWithdrawPopupOpen = ref(false)
 const activeView = ref<ViewKey>('home')
 
 const startView = route.query.view as ViewKey
@@ -65,6 +70,27 @@ const closeAccountPopup = () => {
   isAccountPopupOpen.value = false
 }
 
+const openRefillPopup = () => {
+  isRefillPopupOpen.value = true
+}
+
+const closeRefillPopup = () => {
+  isRefillPopupOpen.value = false
+}
+
+const openWithdrawPopup = () => {
+  isWithdrawPopupOpen.value = true
+}
+
+const closeWithdrawPopup = () => {
+  isWithdrawPopupOpen.value = false
+}
+
+/* ТРЕЙДИНГ ТЕПЕР ПЕРЕКИДУЄ НА СТОРІНКУ */
+const goToTradingPage = () => {
+  router.push('/choicEofGraphics')
+}
+
 const currentComponent = computed(() => {
   const map: Record<ViewKey, any> = {
     home: HomeSection,
@@ -78,6 +104,7 @@ const currentComponent = computed(() => {
   return map[activeView.value]
 })
 </script>
+
 <template>
   <div class="layout-shell">
     <aside class="sidebar">
@@ -166,7 +193,7 @@ const currentComponent = computed(() => {
                 :class="{ active: activeView === 'portfolio-overview-2' }"
                 @click="selectView('portfolio-overview-2')"
               >
-                Огляд 2
+                Ціль
               </li>
 
               <li
@@ -177,19 +204,12 @@ const currentComponent = computed(() => {
                 Історія
               </li>
 
-              <li
-                class="subnav-item"
-                :class="{ active: activeView === 'agreements' }"
-                @click="selectView('agreements')"
-              >
-                Огуди
-              </li>
+            
             </ul>
 
             <li
               class="nav-item"
-              :class="{ active: activeView === 'trading' }"
-              @click="selectView('trading')"
+              @click="goToTradingPage"
             >
               <div class="nav-item__left">
                 <span class="nav-icon">
@@ -217,6 +237,16 @@ const currentComponent = computed(() => {
         </div>
 
         <div class="sidebar-bottom">
+          <div class="wallet-actions">
+            <button class="wallet-action wallet-action--refill" type="button" @click="openRefillPopup">
+              Поповнити
+            </button>
+
+            <button class="wallet-action wallet-action--withdraw" type="button" @click="openWithdrawPopup">
+              Вивести
+            </button>
+          </div>
+
           <button class="account-card" type="button" @click="openAccountPopup">
             <div class="account-avatar-wrap">
               <img
@@ -257,6 +287,16 @@ const currentComponent = computed(() => {
       @close="closeAccountPopup"
     />
 
+    <RefillBalancePopup
+      :is-open="isRefillPopupOpen"
+      @close="closeRefillPopup"
+    />
+
+    <WithdrawBalancePopup
+      :is-open="isWithdrawPopupOpen"
+      @close="closeWithdrawPopup"
+    />
+
     <main class="content-section">
       <component :is="currentComponent" />
     </main>
@@ -282,7 +322,7 @@ const currentComponent = computed(() => {
 }
 
 .sidebar-inner {
-  height: 100vh;
+  height: 95%;
   padding: 32px 20px 20px;
   display: flex;
   flex-direction: column;
@@ -409,6 +449,40 @@ const currentComponent = computed(() => {
 
 .sidebar-bottom {
   padding-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.wallet-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.wallet-action {
+  min-height: 44px;
+  border-radius: 14px;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.wallet-action:hover {
+  transform: translateY(-1px);
+  border-color: var(--accent);
+}
+
+.wallet-action--refill {
+  background: rgba(124, 58, 237, 0.16);
+}
+
+.wallet-action--withdraw {
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .account-card {
@@ -509,6 +583,10 @@ const currentComponent = computed(() => {
   .content-section {
     height: auto;
     overflow: visible;
+  }
+
+  .wallet-actions {
+    grid-template-columns: 1fr;
   }
 }
 </style>

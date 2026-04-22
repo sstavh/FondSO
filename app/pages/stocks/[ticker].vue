@@ -7,6 +7,7 @@ import { marketCompanies } from '~/data/marketCompanies'
 import StocksTickerTape from '~/components/graficComponents/StocksTickerTape.vue'
 import TradeOrdersPanel from '~/components/graficComponents/TradeOrdersPanel.vue'
 import OrdersBoard from '~/components/graficComponents/OrdersBoard.vue'
+import HeaderGraphs from '~/components/HeaderGraphs.vue'
 
 const route = useRoute()
 
@@ -21,12 +22,26 @@ const company = computed<MarketCompany>(() => {
 </script>
 
 <template>
-  <StocksTickerTape />
+  <HeaderGraphs />
+  <StocksTickerTape class="StocksTickerTape" />
 
   <div class="stock-page">
+    <div class="stock-page__hero">
+      <div class="stock-page__hero-content">
+        <p class="stock-page__hero-badge">Трейдинг • Ринок акцій</p>
+        <h1 class="stock-page__hero-title">
+          Торгівля акцією {{ company.name }}
+        </h1>
+        <p class="stock-page__hero-text">
+          Переглядай динаміку ціни, аналізуй ринкові зміни та створюй заявки на
+          купівлю або продаж для {{ company.ticker }} в одному місці.
+        </p>
+      </div>
+    </div>
+
     <div class="stock-page__head">
       <p class="stock-page__label">{{ company.ticker }}</p>
-      <h1 class="stock-page__title">{{ company.name }}</h1>
+      <h2 class="stock-page__title">{{ company.name }}</h2>
     </div>
 
     <div class="stock-layout">
@@ -51,6 +66,45 @@ const company = computed<MarketCompany>(() => {
   flex-direction: column;
   gap: 16px;
   padding: 16px;
+}
+
+.stock-page__hero {
+  padding: 22px;
+  border-radius: 24px;
+  border: 1px solid var(--glass-border);
+  background:
+    radial-gradient(circle at top right, rgba(124, 58, 237, 0.12), transparent 28%),
+    rgba(255, 255, 255, 0.03);
+  box-shadow: var(--shadow-glass);
+}
+
+.stock-page__hero-content {
+  max-width: 760px;
+}
+
+.stock-page__hero-badge {
+  margin: 0 0 10px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.stock-page__hero-title {
+  margin: 0 0 10px;
+  color: var(--text-primary);
+  font-size: clamp(28px, 3vw, 40px);
+  line-height: 1.05;
+  font-weight: 800;
+}
+
+.stock-page__hero-text {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 15px;
+  line-height: 1.6;
+  max-width: 620px;
 }
 
 .stock-page__head {
@@ -87,6 +141,10 @@ const company = computed<MarketCompany>(() => {
 
 .stock-layout__orders {
   margin-top: 4px;
+}
+
+.StocksTickerTape {
+  margin-top: 30px;
 }
 
 @media (max-width: 1100px) {

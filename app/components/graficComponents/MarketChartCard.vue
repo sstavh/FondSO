@@ -36,7 +36,6 @@ const formatPrice = (value: number) => {
   <section class="market-chart-card">
     <div class="market-chart-card__header">
       <div>
-        <p class="market-chart-card__label">{{ company.ticker }}</p>
         <h3 class="market-chart-card__title">{{ company.name }}</h3>
       </div>
 

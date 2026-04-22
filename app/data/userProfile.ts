@@ -2,7 +2,10 @@ import { reactive } from 'vue'
 
 export type Currency = 'UAH' | 'USD' | 'EUR' | 'PLN'
 export type TransactionStatus = 'completed' | 'pending' | 'failed'
-export type TransactionType = 'buy' | 'sell'
+
+/* ДОДАНО deposit */
+export type TransactionType = 'buy' | 'sell' | 'deposit' | 'withdrawal'
+
 export type OrderDurationUnit = 'hours' | 'days' | 'unlimited'
 export type BuyQuantityMode = 'whole' | 'partial'
 export type OrderSide = 'buy' | 'sell'
@@ -40,6 +43,9 @@ export interface TransactionItem {
   currency: Currency
   date: string
   status: TransactionStatus
+
+  /* ДОДАНО */
+  note?: string
 }
 
 export interface GoalState {
@@ -170,6 +176,20 @@ export const mainStore = reactive<{
       currency: 'UAH',
       date: '2026-03-14',
       status: 'completed',
+    },
+
+    /* ПРИКЛАД ПОПОВНЕННЯ */
+    {
+      id: 6,
+      type: 'deposit',
+      assetName: 'Поповнення балансу',
+      ticker: 'BALANCE',
+      quantity: 1,
+      amount: 5000,
+      currency: 'UAH',
+      date: '2026-04-22',
+      status: 'completed',
+      note: 'Поповнення з банківської картки',
     },
   ],
 

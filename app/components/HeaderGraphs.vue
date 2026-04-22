@@ -42,7 +42,7 @@ const goToAccount = () => {
           class="header-graphs__item"
           @click="goToView('portfolio-overview-2')"
         >
-          Транзакції
+      Ціль
         </button>
 
         <button
@@ -52,19 +52,8 @@ const goToAccount = () => {
           Історія
         </button>
 
-        <button
-          class="header-graphs__item"
-          @click="goToView('agreements')"
-        >
-          Огуди
-        </button>
 
-        <button
-          class="header-graphs__item"
-          @click="goToView('trading')"
-        >
-          Трейдинг
-        </button>
+    
       </nav>
 
       <!-- ACCOUNT -->
