@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { balanceStore, type Currency } from '../../data/userProfile'
 
 const selectedCurrency = ref<Currency>(balanceStore.currency)
+const isChartVisible = ref(false)
 
 const exchangeRates: Record<Currency, number> = {
   UAH: 1,
@@ -99,10 +100,16 @@ function formatMoney(value: number, currency: Currency) {
     maximumFractionDigits: currency === 'UAH' ? 0 : 2,
   }).format(Number(value ?? 0))
 }
+
+onMounted(() => {
+  requestAnimationFrame(() => {
+    isChartVisible.value = true
+  })
+})
 </script>
 
 <template>
-  <div class="balance-card">
+  <div class="balance-card" :class="{ 'balance-card--visible': isChartVisible }">
     <div class="balance-header">
       <div>
         <div class="balance-label">Поточний баланс</div>
@@ -119,7 +126,13 @@ function formatMoney(value: number, currency: Currency) {
       </select>
     </div>
 
-    <div class="balance-change" :class="isPositive ? 'positive' : 'negative'">
+    <div
+      class="balance-change"
+      :class="[
+        isPositive ? 'positive' : 'negative',
+        { 'balance-change--visible': isChartVisible }
+      ]"
+    >
       <span class="badge">
         {{ isPositive ? '+' : '' }}{{ Number(deltaPercent ?? 0).toFixed(1) }}%
       </span>
@@ -128,17 +141,23 @@ function formatMoney(value: number, currency: Currency) {
       </span>
     </div>
 
-    <div class="chart-box">
+    <div class="chart-box" :class="{ 'chart-box--visible': isChartVisible }">
       <svg viewBox="0 0 320 96" class="chart-svg">
         <polygon
           :points="areaPoints"
           class="chart-area"
-          :class="isPositive ? 'positive-fill' : 'negative-fill'"
+          :class="[
+            isPositive ? 'positive-fill' : 'negative-fill',
+            { 'chart-area--visible': isChartVisible }
+          ]"
         />
         <polyline
           :points="chartPoints"
           class="chart-line"
-          :class="isPositive ? 'positive-line' : 'negative-line'"
+          :class="[
+            isPositive ? 'positive-line' : 'negative-line',
+            { 'chart-line--visible': isChartVisible }
+          ]"
         />
       </svg>
     </div>
@@ -154,6 +173,21 @@ function formatMoney(value: number, currency: Currency) {
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
   box-shadow: var(--shadow-glass);
+  opacity: 0;
+  transform: translateY(18px) scale(0.985);
+  transition:
+    opacity 0.55s ease,
+    transform 0.55s ease,
+    box-shadow 0.25s ease;
+}
+
+.balance-card--visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.balance-card:hover {
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.3);
 }
 
 .balance-header {
@@ -188,6 +222,16 @@ function formatMoney(value: number, currency: Currency) {
   align-items: center;
   gap: 10px;
   margin-top: 16px;
+  opacity: 0;
+  transform: translateY(10px);
+  transition:
+    opacity 0.45s ease 0.18s,
+    transform 0.45s ease 0.18s;
+}
+
+.balance-change--visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .badge {
@@ -218,12 +262,23 @@ function formatMoney(value: number, currency: Currency) {
 
 .chart-box {
   margin-top: 18px;
+  opacity: 0;
+  transform: translateY(12px);
+  transition:
+    opacity 0.5s ease 0.28s,
+    transform 0.5s ease 0.28s;
+}
+
+.chart-box--visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .chart-svg {
   width: 100%;
   height: auto;
   display: block;
+  overflow: visible;
 }
 
 .chart-line {
@@ -231,10 +286,23 @@ function formatMoney(value: number, currency: Currency) {
   stroke-width: 3;
   stroke-linecap: round;
   stroke-linejoin: round;
+  stroke-dasharray: 400;
+  stroke-dashoffset: 400;
+}
+
+.chart-line--visible {
+  animation: drawLine 1.5s ease forwards 0.35s;
 }
 
 .chart-area {
   stroke: none;
+  opacity: 0;
+  transform: translateY(8px);
+  transform-origin: bottom center;
+}
+
+.chart-area--visible {
+  animation: revealArea 0.9s ease forwards 0.9s;
 }
 
 .positive-line {
@@ -251,5 +319,27 @@ function formatMoney(value: number, currency: Currency) {
 
 .negative-fill {
   fill: rgba(251, 113, 133, 0.16);
+}
+
+@keyframes drawLine {
+  0% {
+    stroke-dashoffset: 400;
+    opacity: 0.2;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+
+@keyframes revealArea {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>
