@@ -95,7 +95,7 @@ onMounted(() => {
 
             <div class="stock-item__info">
               <p class="stock-item__name">{{ company.name }}</p>
-              <p class="stock-item__ticker">{{ company.ticker }}</p>
+             
             </div>
           </div>
 
@@ -128,13 +128,13 @@ onMounted(() => {
             />
 
             <div>
-              <p class="stocks-preview__chart-label">{{ visibleCompany.ticker }}</p>
+             
               <h3 class="stocks-preview__chart-title">{{ visibleCompany.name }}</h3>
             </div>
           </div>
         </div>
 
-        <MarketStockChart :key="visibleCompany.id" :company="visibleCompany" />
+        <MarketStockChart class="tt" :key="visibleCompany.id" :company="visibleCompany" />
       </div>
     </div>
   </section>
@@ -324,5 +324,9 @@ onMounted(() => {
   .stocks-preview {
     grid-template-columns: 1fr;
   }
+}
+
+.tt {
+  width: 965px;
 }
 </style>

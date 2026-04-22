@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { transactionsStore } from '~/data/userProfile'
+
+const isVisible = ref(false)
 
 const boughtTotal = computed(() =>
   transactionsStore
@@ -39,6 +41,9 @@ const soldStroke = computed(() => {
   return (soldPercent.value / 100) * circumference
 })
 
+const boughtDashoffset = computed(() => circumference - boughtStroke.value)
+const soldDashoffset = computed(() => circumference - soldStroke.value)
+
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('uk-UA', {
     style: 'currency',
@@ -46,10 +51,16 @@ const formatCurrency = (value: number) => {
     maximumFractionDigits: 0,
   }).format(value)
 }
+
+onMounted(() => {
+  requestAnimationFrame(() => {
+    isVisible.value = true
+  })
+})
 </script>
 
 <template>
-  <section class="circle-card">
+  <section class="circle-card" :class="{ 'circle-card--visible': isVisible }">
     <div class="circle-card__header">
       <div>
         <p class="circle-card__label">Операції</p>
@@ -69,34 +80,44 @@ const formatCurrency = (value: number) => {
 
           <circle
             class="chart-bought"
+            :class="{ 'chart-bought--visible': isVisible }"
             cx="90"
             cy="90"
             :r="radius"
-            :stroke-dasharray="`${boughtStroke} ${circumference}`"
+            :style="{
+              strokeDasharray: circumference,
+              strokeDashoffset: isVisible ? boughtDashoffset : circumference
+            }"
           />
 
           <circle
             class="chart-sold"
+            :class="{ 'chart-sold--visible': isVisible }"
             cx="90"
             cy="90"
             :r="radius"
-            :stroke-dasharray="`${soldStroke} ${circumference}`"
-            :stroke-dashoffset="`-${boughtStroke}`"
+            :style="{
+              strokeDasharray: circumference,
+              strokeDashoffset: isVisible ? soldDashoffset : circumference
+            }"
+            :transform="`rotate(${(boughtPercent / 100) * 360 - 90} 90 90)`"
           />
         </svg>
 
-        <div class="chart-center">
+        <div class="chart-center" :class="{ 'chart-center--visible': isVisible }">
           <p class="chart-center__label">Всього</p>
           <p class="chart-center__value">{{ boughtPercent + soldPercent }}%</p>
         </div>
       </div>
 
-      <div class="legend">
+      <div class="legend" :class="{ 'legend--visible': isVisible }">
         <div class="legend-item">
           <span class="legend-item__dot legend-item__dot--bought"></span>
           <div class="legend-item__content">
             <p class="legend-item__title">Куплені</p>
-            <p class="legend-item__meta">{{ boughtPercent }}% · {{ formatCurrency(boughtTotal) }}</p>
+            <p class="legend-item__meta">
+              {{ boughtPercent }}% · {{ formatCurrency(boughtTotal) }}
+            </p>
           </div>
         </div>
 
@@ -104,7 +125,9 @@ const formatCurrency = (value: number) => {
           <span class="legend-item__dot legend-item__dot--sold"></span>
           <div class="legend-item__content">
             <p class="legend-item__title">Продані</p>
-            <p class="legend-item__meta">{{ soldPercent }}% · {{ formatCurrency(soldTotal) }}</p>
+            <p class="legend-item__meta">
+              {{ soldPercent }}% · {{ formatCurrency(soldTotal) }}
+            </p>
           </div>
         </div>
       </div>
@@ -120,6 +143,21 @@ const formatCurrency = (value: number) => {
   border: 1px solid var(--glass-border);
   background: var(--glass-bg);
   box-shadow: var(--shadow-glass);
+  opacity: 0;
+  transform: translateY(22px) scale(0.97);
+  transition:
+    opacity 0.55s ease,
+    transform 0.55s ease,
+    box-shadow 0.25s ease;
+}
+
+.circle-card--visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.circle-card:hover {
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.3);
 }
 
 .circle-card__header {
@@ -173,11 +211,27 @@ const formatCurrency = (value: number) => {
 .chart-bought {
   stroke: #7c3aed;
   stroke-linecap: round;
+  transition:
+    stroke-dashoffset 1.1s ease 0.2s,
+    opacity 0.3s ease 0.2s;
+  opacity: 0;
+}
+
+.chart-bought--visible {
+  opacity: 1;
 }
 
 .chart-sold {
   stroke: #22c55e;
   stroke-linecap: round;
+  transition:
+    stroke-dashoffset 1.1s ease 0.55s,
+    opacity 0.3s ease 0.55s;
+  opacity: 0;
+}
+
+.chart-sold--visible {
+  opacity: 1;
 }
 
 .chart-center {
@@ -188,6 +242,16 @@ const formatCurrency = (value: number) => {
   justify-content: center;
   flex-direction: column;
   pointer-events: none;
+  opacity: 0;
+  transform: scale(0.88);
+  transition:
+    opacity 0.45s ease 0.95s,
+    transform 0.45s ease 0.95s;
+}
+
+.chart-center--visible {
+  opacity: 1;
+  transform: scale(1);
 }
 
 .chart-center__label {
@@ -207,6 +271,16 @@ const formatCurrency = (value: number) => {
   display: flex;
   flex-direction: column;
   gap: 14px;
+  opacity: 0;
+  transform: translateX(18px);
+  transition:
+    opacity 0.5s ease 1.05s,
+    transform 0.5s ease 1.05s;
+}
+
+.legend--visible {
+  opacity: 1;
+  transform: translateX(0);
 }
 
 .legend-item {
@@ -249,6 +323,10 @@ const formatCurrency = (value: number) => {
 }
 
 @media (max-width: 768px) {
+  .circle-card {
+    min-width: 100%;
+  }
+
   .circle-card__content {
     grid-template-columns: 1fr;
   }

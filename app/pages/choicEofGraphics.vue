@@ -36,10 +36,7 @@ const handleCompanyUpdate = (company: MarketCompany) => {
           <strong class="hero__value">{{ selectedCompany.name }}</strong>
         </div>
 
-        <div class="hero__card">
-          <span class="hero__label">Тікер</span>
-          <strong class="hero__value">{{ selectedCompany.ticker }}</strong>
-        </div>
+       
 
         <div class="hero__card">
           <span class="hero__label">Режим</span>
