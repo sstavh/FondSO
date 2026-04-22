@@ -10,13 +10,13 @@ import LatestDealsCard from './UserInformationComponents/LatestDealsCard.vue';
 
 
 <template>
-       <!---- <div class="tt">
+    <div class="tt">
          <BalanceCard class="ttB"/>
         <TransactionTotalCard/>
 </div>
 <TransactionsCircleCard/>
 <GoalTargetCard/>
-<TrendingStocksCard/>-->
+<TrendingStocksCard/>
 <LatestDealsCard      />                
 
 </template>

@@ -3,6 +3,9 @@ import { reactive } from 'vue'
 export type Currency = 'UAH' | 'USD' | 'EUR' | 'PLN'
 export type TransactionStatus = 'completed' | 'pending' | 'failed'
 export type TransactionType = 'buy' | 'sell'
+export type OrderDurationUnit = 'hours' | 'days' | 'unlimited'
+export type BuyQuantityMode = 'whole' | 'partial'
+export type OrderSide = 'buy' | 'sell'
 
 export interface UserProfile {
   firstName: string
@@ -44,11 +47,47 @@ export interface GoalState {
   earnedAmount: number
 }
 
+export interface PortfolioHolding {
+  ticker: string
+  assetName: string
+  quantity: number
+  averageBuyPrice: number
+  logo: string
+}
+
+export interface TradeOrderItem {
+  id: number
+  side: OrderSide
+  assetName: string
+  ticker: string
+  logo: string
+  currency: Currency
+  amount: number
+  quantity: number
+  quantityMode?: BuyQuantityMode
+  limitPrice: number
+  durationUnit: OrderDurationUnit
+  durationValue: number | null
+  createdAt: string
+  expiresAt: string | null
+  progress: number
+  status: 'active' | 'cancelled' | 'completed'
+}
+
+export interface OrderPreviewState {
+  isOpen: boolean
+  order: TradeOrderItem | null
+}
+
 export const mainStore = reactive<{
   userProfile: UserProfile
   balanceStore: BalanceState
   transactionsStore: TransactionItem[]
   goalStore: GoalState
+  holdingsStore: PortfolioHolding[]
+  buyOrdersStore: TradeOrderItem[]
+  sellOrdersStore: TradeOrderItem[]
+  orderPreviewStore: OrderPreviewState
 }>({
   userProfile: {
     firstName: '',
@@ -138,9 +177,90 @@ export const mainStore = reactive<{
     targetAmount: 50000,
     earnedAmount: 20150,
   },
+
+  holdingsStore: [
+    {
+      ticker: 'AAPL',
+      assetName: 'Apple',
+      quantity: 12,
+      averageBuyPrice: 214,
+      logo: '/images/stocks/apple.png',
+    },
+    {
+      ticker: 'TSLA',
+      assetName: 'Tesla',
+      quantity: 6,
+      averageBuyPrice: 187,
+      logo: '/images/stocks/tesla.png',
+    },
+    {
+      ticker: 'NVDA',
+      assetName: 'NVIDIA',
+      quantity: 3,
+      averageBuyPrice: 902,
+      logo: '/images/stocks/nvidia.png',
+    },
+    {
+      ticker: 'AMZN',
+      assetName: 'Amazon',
+      quantity: 8,
+      averageBuyPrice: 178,
+      logo: '/images/stocks/amazon.png',
+    },
+  ],
+
+  buyOrdersStore: [
+    {
+      id: 101,
+      side: 'buy',
+      assetName: 'Apple',
+      ticker: 'AAPL',
+      logo: '/images/stocks/apple.png',
+      currency: 'USD',
+      amount: 1200,
+      quantity: 5,
+      quantityMode: 'whole',
+      limitPrice: 210,
+      durationUnit: 'days',
+      durationValue: 2,
+      createdAt: '2026-04-21T09:00:00',
+      expiresAt: '2026-04-23T09:00:00',
+      progress: 45,
+      status: 'active',
+    },
+  ],
+
+  sellOrdersStore: [
+    {
+      id: 201,
+      side: 'sell',
+      assetName: 'Tesla',
+      ticker: 'TSLA',
+      logo: '/images/stocks/tesla.png',
+      currency: 'USD',
+      amount: 561,
+      quantity: 3,
+      limitPrice: 187,
+      durationUnit: 'unlimited',
+      durationValue: null,
+      createdAt: '2026-04-21T08:00:00',
+      expiresAt: null,
+      progress: 72,
+      status: 'active',
+    },
+  ],
+
+  orderPreviewStore: {
+    isOpen: false,
+    order: null,
+  },
 })
 
 export const userProfile = mainStore.userProfile
 export const balanceStore = mainStore.balanceStore
 export const transactionsStore = mainStore.transactionsStore
 export const goalStore = mainStore.goalStore
+export const holdingsStore = mainStore.holdingsStore
+export const buyOrdersStore = mainStore.buyOrdersStore
+export const sellOrdersStore = mainStore.sellOrdersStore
+export const orderPreviewStore = mainStore.orderPreviewStore
