@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { goalStore, balanceStore } from '~/data/userProfile'
+
+const isVisible = ref(false)
 
 const remainingAmount = computed(() => {
   const value = goalStore.targetAmount - goalStore.earnedAmount
@@ -13,6 +15,8 @@ const progressPercent = computed(() => {
   return percent > 100 ? 100 : percent
 })
 
+const animatedProgress = ref(0)
+
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('uk-UA', {
     style: 'currency',
@@ -20,25 +24,35 @@ const formatCurrency = (value: number) => {
     maximumFractionDigits: 0,
   }).format(value)
 }
+
+onMounted(() => {
+  requestAnimationFrame(() => {
+    isVisible.value = true
+
+    setTimeout(() => {
+      animatedProgress.value = progressPercent.value
+    }, 180)
+  })
+})
 </script>
 
 <template>
-  <section class="goal-card">
+  <section class="goal-card" :class="{ 'goal-card--visible': isVisible }">
     <div class="goal-card__top">
       <p class="goal-card__label">Фінансова ціль</p>
       <h3 class="goal-card__title">Скільки хочеш заробити</h3>
     </div>
 
-    <div class="goal-card__main">
+    <div class="goal-card__main" :class="{ 'goal-card__main--visible': isVisible }">
       <p class="goal-card__target">{{ formatCurrency(goalStore.targetAmount) }}</p>
       <p class="goal-card__hint">Цільова сума</p>
     </div>
 
-    <div class="goal-card__progress">
+    <div class="goal-card__progress" :class="{ 'goal-card__progress--visible': isVisible }">
       <div class="goal-card__progress-bar">
         <div
           class="goal-card__progress-fill"
-          :style="{ width: `${progressPercent}%` }"
+          :style="{ width: `${animatedProgress}%` }"
         />
       </div>
 
@@ -48,7 +62,7 @@ const formatCurrency = (value: number) => {
       </div>
     </div>
 
-    <div class="goal-card__stats">
+    <div class="goal-card__stats" :class="{ 'goal-card__stats--visible': isVisible }">
       <div class="goal-stat">
         <p class="goal-stat__label">Вже зароблено</p>
         <p class="goal-stat__value">{{ formatCurrency(goalStore.earnedAmount) }}</p>
@@ -64,12 +78,27 @@ const formatCurrency = (value: number) => {
 
 <style scoped>
 .goal-card {
-  min-width: 600px;;
+  min-width: 600px;
   padding: 20px;
   border-radius: var(--radius-md);
   border: 1px solid var(--glass-border);
   background: var(--glass-bg);
   box-shadow: var(--shadow-glass);
+  opacity: 0;
+  transform: translateY(18px) scale(0.985);
+  transition:
+    opacity 0.55s ease,
+    transform 0.55s ease,
+    box-shadow 0.25s ease;
+}
+
+.goal-card--visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.goal-card:hover {
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.28);
 }
 
 .goal-card__top {
@@ -91,6 +120,16 @@ const formatCurrency = (value: number) => {
 
 .goal-card__main {
   margin-bottom: 18px;
+  opacity: 0;
+  transform: translateY(10px);
+  transition:
+    opacity 0.45s ease 0.12s,
+    transform 0.45s ease 0.12s;
+}
+
+.goal-card__main--visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .goal-card__target {
@@ -109,6 +148,16 @@ const formatCurrency = (value: number) => {
 
 .goal-card__progress {
   margin-bottom: 18px;
+  opacity: 0;
+  transform: translateY(10px);
+  transition:
+    opacity 0.45s ease 0.2s,
+    transform 0.45s ease 0.2s;
+}
+
+.goal-card__progress--visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .goal-card__progress-bar {
@@ -124,6 +173,9 @@ const formatCurrency = (value: number) => {
   height: 100%;
   border-radius: 999px;
   background: var(--accent);
+  width: 0;
+  transition: width 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+  box-shadow: 0 0 12px rgba(124, 58, 237, 0.35);
 }
 
 .goal-card__progress-info {
@@ -138,6 +190,16 @@ const formatCurrency = (value: number) => {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
+  opacity: 0;
+  transform: translateY(12px);
+  transition:
+    opacity 0.45s ease 0.34s,
+    transform 0.45s ease 0.34s;
+}
+
+.goal-card__stats--visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .goal-stat {
@@ -161,6 +223,10 @@ const formatCurrency = (value: number) => {
 }
 
 @media (max-width: 700px) {
+  .goal-card {
+    min-width: 100%;
+  }
+
   .goal-card__stats {
     grid-template-columns: 1fr;
   }

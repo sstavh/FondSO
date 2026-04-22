@@ -88,7 +88,7 @@ const closeWithdrawPopup = () => {
 
 /* ТРЕЙДИНГ ТЕПЕР ПЕРЕКИДУЄ НА СТОРІНКУ */
 const goToTradingPage = () => {
-  router.push('/stocks/AAPL')
+  router.push('/choicEofGraphics')
 }
 
 const currentComponent = computed(() => {

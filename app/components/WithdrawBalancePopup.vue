@@ -25,6 +25,14 @@ const form = reactive({
   cvv: '',
 })
 
+const touched = reactive({
+  amount: false,
+  cardNumber: false,
+  cardHolder: false,
+  expiry: false,
+  cvv: false,
+})
+
 const resetForm = () => {
   form.amount = ''
   form.currency = balanceStore.currency
@@ -32,6 +40,12 @@ const resetForm = () => {
   form.cardHolder = ''
   form.expiry = ''
   form.cvv = ''
+
+  touched.amount = false
+  touched.cardNumber = false
+  touched.cardHolder = false
+  touched.expiry = false
+  touched.cvv = false
 }
 
 watch(
@@ -39,6 +53,8 @@ watch(
   (value) => {
     if (value) {
       form.currency = balanceStore.currency
+    } else {
+      resetForm()
     }
   }
 )
@@ -74,22 +90,80 @@ const formattedCvv = computed({
   },
 })
 
+const formattedCardHolder = computed({
+  get: () => form.cardHolder,
+  set: (value: string) => {
+    form.cardHolder = value
+      .replace(/[^A-Za-zА-Яа-яІіЇїЄєҐґ\s'-]/g, '')
+      .replace(/\s{2,}/g, ' ')
+      .slice(0, 40)
+  },
+})
+
 const numericAmount = computed(() => Number(form.amount || 0))
 
 const hasEnoughBalance = computed(() => {
   return numericAmount.value > 0 && numericAmount.value <= balanceStore.balance
 })
 
+const amountError = computed(() => {
+  if (!touched.amount) return ''
+  if (!form.amount) return 'Вкажіть суму.'
+  if (!/^\d+(\.\d{1,2})?$/.test(form.amount)) return 'Дозволено тільки числа і до 2 знаків після коми.'
+  if (Number(form.amount) <= 0) return 'Сума повинна бути більшою за 0.'
+  if (!hasEnoughBalance.value) return 'Недостатньо коштів на балансі.'
+  return ''
+})
+
+const cardNumberError = computed(() => {
+  if (!touched.cardNumber) return ''
+  const digits = form.cardNumber.replace(/\s/g, '')
+  if (!digits) return 'Вкажіть номер картки.'
+  if (digits.length !== 16) return 'Номер картки повинен містити 16 цифр.'
+  return ''
+})
+
+const cardHolderError = computed(() => {
+  if (!touched.cardHolder) return ''
+  const value = form.cardHolder.trim()
+  if (!value) return 'Вкажіть імʼя власника.'
+  if (value.length < 3) return 'Мінімум 3 символи.'
+  if (!/^[A-Za-zА-Яа-яІіЇїЄєҐґ\s'-]+$/.test(value)) return 'Дозволені тільки літери, пробіл, апостроф і дефіс.'
+  return ''
+})
+
+const expiryError = computed(() => {
+  if (!touched.expiry) return ''
+  if (!form.expiry) return 'Вкажіть термін дії.'
+  if (!/^\d{2}\/\d{2}$/.test(form.expiry)) return 'Формат повинен бути MM/YY.'
+
+  const [monthText] = form.expiry.split('/')
+  const month = Number(monthText)
+
+  if (month < 1 || month > 12) return 'Місяць повинен бути від 01 до 12.'
+  return ''
+})
+
+const cvvError = computed(() => {
+  if (!touched.cvv) return ''
+  if (!form.cvv) return 'Вкажіть CVV.'
+  if (!/^\d{3}$/.test(form.cvv)) return 'CVV повинен містити 3 цифри.'
+  return ''
+})
+
 const isValid = computed(() => {
   return Boolean(
-    form.amount &&
-      Number(form.amount) > 0 &&
+    !amountError.value &&
+      !cardNumberError.value &&
+      !cardHolderError.value &&
+      !expiryError.value &&
+      !cvvError.value &&
+      form.amount &&
       form.currency &&
-      form.cardNumber.replace(/\s/g, '').length === 16 &&
-      form.cardHolder.trim().length >= 3 &&
-      /^\d{2}\/\d{2}$/.test(form.expiry) &&
-      form.cvv.length === 3 &&
-      hasEnoughBalance.value
+      form.cardNumber &&
+      form.cardHolder &&
+      form.expiry &&
+      form.cvv
   )
 })
 
@@ -107,6 +181,12 @@ const formatTransactionDate = () => {
 }
 
 const submitWithdraw = () => {
+  touched.amount = true
+  touched.cardNumber = true
+  touched.cardHolder = true
+  touched.expiry = true
+  touched.cvv = true
+
   if (!isValid.value) return
 
   const withdrawAmount = Number(form.amount)
@@ -173,12 +253,14 @@ const submitWithdraw = () => {
             <span>Сума</span>
             <input
               v-model="form.amount"
-              type="number"
-              min="1"
-              step="0.01"
+              type="text"
+              inputmode="decimal"
+              maxlength="12"
               class="withdraw-input"
               placeholder="Введіть суму"
+              @blur="touched.amount = true"
             />
+            <small v-if="amountError" class="withdraw-error">{{ amountError }}</small>
           </label>
 
           <label class="withdraw-field">
@@ -202,19 +284,26 @@ const submitWithdraw = () => {
             <input
               v-model="formattedCardNumber"
               type="text"
+              inputmode="numeric"
+              maxlength="19"
               class="withdraw-input"
               placeholder="0000 0000 0000 0000"
+              @blur="touched.cardNumber = true"
             />
+            <small v-if="cardNumberError" class="withdraw-error">{{ cardNumberError }}</small>
           </label>
 
           <label class="withdraw-field withdraw-field--full">
             <span>Власник картки</span>
             <input
-              v-model="form.cardHolder"
+              v-model="formattedCardHolder"
               type="text"
+              maxlength="40"
               class="withdraw-input"
               placeholder="IVAN PETRENKO"
+              @blur="touched.cardHolder = true"
             />
+            <small v-if="cardHolderError" class="withdraw-error">{{ cardHolderError }}</small>
           </label>
 
           <div class="withdraw-row">
@@ -223,9 +312,13 @@ const submitWithdraw = () => {
               <input
                 v-model="formattedExpiry"
                 type="text"
+                inputmode="numeric"
+                maxlength="5"
                 class="withdraw-input"
                 placeholder="12/28"
+                @blur="touched.expiry = true"
               />
+              <small v-if="expiryError" class="withdraw-error">{{ expiryError }}</small>
             </label>
 
             <label class="withdraw-field">
@@ -233,16 +326,16 @@ const submitWithdraw = () => {
               <input
                 v-model="formattedCvv"
                 type="password"
+                inputmode="numeric"
+                maxlength="3"
                 class="withdraw-input"
                 placeholder="***"
+                @blur="touched.cvv = true"
               />
+              <small v-if="cvvError" class="withdraw-error">{{ cvvError }}</small>
             </label>
           </div>
         </div>
-
-        <p v-if="form.amount && !hasEnoughBalance" class="withdraw-error">
-          Недостатньо коштів на балансі.
-        </p>
 
         <div class="withdraw-popup__bottom">
           <button
@@ -385,9 +478,8 @@ const submitWithdraw = () => {
 }
 
 .withdraw-error {
-  margin: 14px 0 0;
   color: #ef4444;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
 }
 
