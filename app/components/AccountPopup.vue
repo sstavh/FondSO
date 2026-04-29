@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useRouter } from 'vue-router'
 import type { UserProfile } from '~/data/userProfile'
+import { userProfile } from '~/data/userProfile'
 
 const props = defineProps<{
   isOpen: boolean
@@ -10,6 +12,8 @@ const props = defineProps<{
 const emit = defineEmits<{
   close: []
 }>()
+
+const router = useRouter()
 
 const fullName = computed(() => {
   return `${props.userProfile.firstName || ''} ${props.userProfile.lastName || ''}`.trim() || 'Користувач'
@@ -34,8 +38,24 @@ const formattedBirthDate = computed(() => {
 })
 
 const registrationStatus = computed(() => {
-  return props.userProfile.registrationCompleted ? 'Реєстрацію завершено' : 'Реєстрацію не завершено'
+  return props.userProfile.registrationCompleted
+    ? 'Реєстрацію завершено'
+    : 'Реєстрацію не завершено'
 })
+
+const logout = () => {
+  userProfile.firstName = ''
+  userProfile.lastName = ''
+  userProfile.email = ''
+  userProfile.country = ''
+  userProfile.purpose = ''
+  userProfile.birthDate = ''
+  userProfile.phone = ''
+  userProfile.registrationCompleted = false
+
+  emit('close')
+  router.push('/login')
+}
 </script>
 
 <template>
@@ -45,7 +65,11 @@ const registrationStatus = computed(() => {
     @click="emit('close')"
   >
     <div class="account-popup" @click.stop>
-      <button class="account-popup__close" type="button" @click="emit('close')">
+      <button
+        class="account-popup__close"
+        type="button"
+        @click="emit('close')"
+      >
         ×
       </button>
 
@@ -75,34 +99,54 @@ const registrationStatus = computed(() => {
         <div class="account-popup__grid">
           <div class="info-card">
             <p class="info-card__label">Ім'я</p>
-            <p class="info-card__value">{{ userProfile.firstName || 'Не вказано' }}</p>
+            <p class="info-card__value">
+              {{ userProfile.firstName || 'Не вказано' }}
+            </p>
           </div>
 
           <div class="info-card">
             <p class="info-card__label">Прізвище</p>
-            <p class="info-card__value">{{ userProfile.lastName || 'Не вказано' }}</p>
+            <p class="info-card__value">
+              {{ userProfile.lastName || 'Не вказано' }}
+            </p>
           </div>
 
           <div class="info-card">
             <p class="info-card__label">Країна</p>
-            <p class="info-card__value">{{ userProfile.country || 'Не вказано' }}</p>
+            <p class="info-card__value">
+              {{ userProfile.country || 'Не вказано' }}
+            </p>
           </div>
 
           <div class="info-card">
             <p class="info-card__label">Мета акаунта</p>
-            <p class="info-card__value">{{ formattedPurpose }}</p>
+            <p class="info-card__value">
+              {{ formattedPurpose }}
+            </p>
           </div>
 
           <div class="info-card">
             <p class="info-card__label">Дата народження</p>
-            <p class="info-card__value">{{ formattedBirthDate }}</p>
+            <p class="info-card__value">
+              {{ formattedBirthDate }}
+            </p>
           </div>
 
           <div class="info-card">
             <p class="info-card__label">Номер телефону</p>
-            <p class="info-card__value">{{ userProfile.phone || 'Не вказано' }}</p>
+            <p class="info-card__value">
+              {{ userProfile.phone || 'Не вказано' }}
+            </p>
           </div>
         </div>
+
+        <button
+          class="logout-btn"
+          type="button"
+          @click="logout"
+        >
+          Вийти з акаунта
+        </button>
       </div>
     </div>
   </div>
@@ -119,7 +163,6 @@ const registrationStatus = computed(() => {
   padding: var(--space-lg);
   z-index: 100;
   backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
 }
 
 .account-popup {
@@ -146,14 +189,7 @@ const registrationStatus = computed(() => {
   background: var(--glass-bg);
   color: var(--text-primary);
   font-size: 22px;
-  line-height: 1;
   cursor: pointer;
-  transition: background 0.2s ease, transform 0.2s ease;
-}
-
-.account-popup__close:hover {
-  background: var(--accent-light);
-  transform: scale(1.05);
 }
 
 .account-popup__top {
@@ -170,8 +206,6 @@ const registrationStatus = computed(() => {
   border-radius: 50%;
   overflow: hidden;
   margin-bottom: var(--space-md);
-  border: 2px solid var(--glass-border);
-  background: var(--bg-main);
 }
 
 .account-popup__avatar {
@@ -181,77 +215,69 @@ const registrationStatus = computed(() => {
 }
 
 .account-popup__name {
-  margin: 0 0 var(--space-xs);
+  margin: 0 0 6px;
   color: var(--text-primary);
   font-size: var(--text-xl);
   font-weight: 700;
 }
 
 .account-popup__email {
-  margin: 0 0 var(--space-md);
+  margin: 0 0 12px;
   color: var(--text-secondary);
-  font-size: var(--text-sm);
 }
 
 .account-popup__status {
   padding: 10px 14px;
   border-radius: 999px;
   background: var(--accent-light);
-  border: 1px solid var(--glass-border);
-  color: var(--text-primary);
-  font-size: var(--text-sm);
-  font-weight: 600;
-}
-
-.account-popup__content {
-  width: 100%;
 }
 
 .account-popup__grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: var(--space-md);
+  gap: 14px;
+  margin-bottom: 20px;
 }
 
 .info-card {
-  padding: var(--space-md);
-  border-radius: var(--radius-md);
+  padding: 14px;
+  border-radius: 14px;
   background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
 }
 
 .info-card__label {
   margin: 0 0 8px;
   color: var(--text-secondary);
-  font-size: var(--text-xs);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  font-size: 12px;
 }
 
 .info-card__value {
   margin: 0;
   color: var(--text-primary);
-  font-size: var(--text-base);
   font-weight: 600;
-  word-break: break-word;
+}
+
+.logout-btn {
+  width: 100%;
+  min-height: 50px;
+  border: none;
+  border-radius: 16px;
+  background: #ef4444;
+  color: white;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.logout-btn:hover {
+  background: #dc2626;
+  transform: translateY(-1px);
 }
 
 @media (max-width: 640px) {
-  .account-popup {
-    padding: var(--space-lg);
-  }
-
   .account-popup__grid {
     grid-template-columns: 1fr;
-  }
-
-  .account-popup__avatar-wrap {
-    width: 88px;
-    height: 88px;
-  }
-
-  .account-popup__name {
-    font-size: var(--text-lg);
   }
 }
 </style>

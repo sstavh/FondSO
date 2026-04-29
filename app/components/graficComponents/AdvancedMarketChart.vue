@@ -190,7 +190,6 @@ onBeforeUnmount(() => {
   <section ref="cardRef" class="advanced-chart">
     <div class="advanced-chart__top">
       <div>
-        <p class="advanced-chart__ticker">{{ company.ticker }}</p>
         <h2 class="advanced-chart__title">{{ company.name }}</h2>
       </div>
 

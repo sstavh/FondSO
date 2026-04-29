@@ -33,7 +33,7 @@ const allOrders = computed(() => {
           <div>
             <p class="orders-item__name">{{ order.assetName }}</p>
             <p class="orders-item__meta">
-              {{ order.ticker }} • {{ order.side === 'buy' ? 'Купівля' : 'Продаж' }}
+               {{ order.side === 'buy' ? 'Купівля' : 'Продаж' }}
             </p>
           </div>
         </div>

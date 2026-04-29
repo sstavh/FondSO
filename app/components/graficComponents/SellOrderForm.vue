@@ -192,7 +192,7 @@ const createOrder = () => {
 }
 
 .trade-input {
-  width: 100%;
+
   min-height: 46px;
   padding: 0 14px;
   border-radius: 14px;

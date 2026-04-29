@@ -23,7 +23,7 @@ const company = computed<MarketCompany>(() => {
 
 <template>
   <HeaderGraphs />
-  <StocksTickerTape class="StocksTickerTape" />
+ 
 
   <div class="stock-page">
     <div class="stock-page__hero">
@@ -34,15 +34,16 @@ const company = computed<MarketCompany>(() => {
         </h1>
         <p class="stock-page__hero-text">
           Переглядай динаміку ціни, аналізуй ринкові зміни та створюй заявки на
-          купівлю або продаж для {{ company.ticker }} в одному місці.
+          купівлю або продаж для {{ company.name }} в одному місці.
         </p>
       </div>
     </div>
 
     <div class="stock-page__head">
-      <p class="stock-page__label">{{ company.ticker }}</p>
-      <h2 class="stock-page__title">{{ company.name }}</h2>
+      
+     
     </div>
+     <StocksTickerTape class="StocksTickerTape" />
 
     <div class="stock-layout">
       <div class="stock-layout__chart">
@@ -129,7 +130,7 @@ const company = computed<MarketCompany>(() => {
 .stock-layout {
   display: grid;
   grid-template-columns: minmax(0, 1.7fr) minmax(340px, 0.9fr);
-  gap: 16px;
+  gap: 46px;
   align-items: start;
 }
 
@@ -144,7 +145,8 @@ const company = computed<MarketCompany>(() => {
 }
 
 .StocksTickerTape {
-  margin-top: 30px;
+  margin-top: 15px;
+  margin-bottom: 15px;
 }
 
 @media (max-width: 1100px) {
