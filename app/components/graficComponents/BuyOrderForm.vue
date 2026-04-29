@@ -133,12 +133,12 @@ const createOrder = () => {
       </label>
 
       <div class="trade-row">
-        <label class="trade-field">
+        <label class="trade-field ttt">
           <span>Час</span>
           <input v-model="form.durationValue" type="number" min="1" class="trade-input" />
         </label>
 
-        <label class="trade-field">
+        <label class="trade-field tt">
           <span>Одиниця</span>
           <select v-model="form.durationUnit" class="trade-input">
             <option
@@ -168,12 +168,14 @@ const createOrder = () => {
 }
 
 .trade-form {
+    width: 370px;
   display: flex;
   flex-direction: column;
   gap: 14px;
 }
 
 .trade-field {
+  width: 370px;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -185,7 +187,7 @@ const createOrder = () => {
 }
 
 .trade-input {
-  width: 100%;
+
   min-height: 46px;
   padding: 0 14px;
   border-radius: 14px;
@@ -197,7 +199,7 @@ const createOrder = () => {
 .trade-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  gap: 42px;
 }
 
 .trade-asset {
@@ -241,4 +243,12 @@ const createOrder = () => {
   opacity: 0.45;
   cursor: not-allowed;
 }
+
+.tt{
+  width: 170px;
+}
+.ttt{
+  width: 150px;
+}
+
 </style>

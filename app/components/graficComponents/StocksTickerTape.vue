@@ -64,8 +64,8 @@ const repeatedTickerItems = computed(() => [
               </div>
 
               <div class="ticker-card__info">
-                <p class="ticker-card__ticker">{{ item.ticker }}</p>
-                <p class="ticker-card__name">{{ item.name }}</p>
+              
+                <p class="ticker-card__ticker">{{ item.name }}</p>
               </div>
             </div>
 
