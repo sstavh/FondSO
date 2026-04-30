@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import type { MarketCompany } from '~/data/marketCompanies'
+import type { MarketCompany } from '~/composables/useApi'
 import BuyOrderForm from './BuyOrderForm.vue'
 import SellOrderForm from './SellOrderForm.vue'
 import OrderConfirmPopup from './OrderConfirmPopup.vue'

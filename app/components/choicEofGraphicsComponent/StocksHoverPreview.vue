@@ -1,42 +1,29 @@
 <script setup lang="ts">
 import { computed, ref, watch, onMounted } from 'vue'
 import { NuxtLink } from '#components'
-import type { MarketCompany } from '~/data/marketCompanies'
-import { marketCompanies } from '~/data/marketCompanies'
+import type { MarketCompany } from '~/composables/useApi'
+import { useApi } from '~/composables/useApi'
 import MarketStockChart from '../graficComponents/MarketChartCard.vue'
-
-const props = withDefaults(
-  defineProps<{
-    companies?: MarketCompany[]
-  }>(),
-  {
-    companies: () => marketCompanies,
-  }
-)
 
 const emit = defineEmits<{
   (e: 'update:company', company: MarketCompany): void
 }>()
 
-const hoveredCompanyId = ref<number>(props.companies[0]?.id ?? 1)
-const visibleCompanyId = ref<number>(props.companies[0]?.id ?? 1)
-const isChartVisible = ref(true)
+const api = useApi()
+const companies = ref<MarketCompany[]>([])
+const hoveredCompanyId = ref<number>(0)
+const visibleCompanyId = ref<number>(0)
+const isChartVisible = ref(false)
 
 let hoverTimer: ReturnType<typeof setTimeout> | null = null
 
-const hoveredCompany = computed(() => {
-  return (
-    props.companies.find((company) => company.id === hoveredCompanyId.value) ??
-    props.companies[0]!
-  )
-})
+const hoveredCompany = computed(() =>
+  companies.value.find((c) => c.id === hoveredCompanyId.value) ?? companies.value[0]
+)
 
-const visibleCompany = computed(() => {
-  return (
-    props.companies.find((company) => company.id === visibleCompanyId.value) ??
-    props.companies[0]!
-  )
-})
+const visibleCompany = computed(() =>
+  companies.value.find((c) => c.id === visibleCompanyId.value) ?? companies.value[0]
+)
 
 const onHoverCompany = (companyId: number) => {
   if (hoveredCompanyId.value === companyId) return
@@ -45,25 +32,23 @@ const onHoverCompany = (companyId: number) => {
 
 watch(hoveredCompanyId, (newId) => {
   if (newId === visibleCompanyId.value) return
-
-  if (hoverTimer) {
-    clearTimeout(hoverTimer)
-  }
-
+  if (hoverTimer) clearTimeout(hoverTimer)
   isChartVisible.value = false
-
   hoverTimer = setTimeout(() => {
     visibleCompanyId.value = newId
-    emit('update:company', visibleCompany.value)
-
-    requestAnimationFrame(() => {
-      isChartVisible.value = true
-    })
+    if (visibleCompany.value) emit('update:company', visibleCompany.value)
+    requestAnimationFrame(() => { isChartVisible.value = true })
   }, 180)
 })
 
-onMounted(() => {
-  emit('update:company', visibleCompany.value)
+onMounted(async () => {
+  companies.value = await api.get<MarketCompany[]>('/api/market/companies')
+  if (companies.value.length > 0) {
+    hoveredCompanyId.value = companies.value[0]!.id
+    visibleCompanyId.value = companies.value[0]!.id
+    emit('update:company', companies.value[0]!)
+    isChartVisible.value = true
+  }
 })
 </script>
 
@@ -80,7 +65,7 @@ onMounted(() => {
           v-for="company in companies"
           :key="company.id"
           class="stock-item"
-          :class="{ active: visibleCompany.id === company.id || hoveredCompany.id === company.id }"
+          :class="{ active: visibleCompany?.id === company.id || hoveredCompany?.id === company.id }"
           :to="`/stocks/${company.ticker.toLowerCase()}`"
           @mouseenter="onHoverCompany(company.id)"
         >
@@ -116,6 +101,7 @@ onMounted(() => {
 
     <div class="stocks-preview__right">
       <div
+        v-if="visibleCompany"
         class="stocks-preview__chart-box"
         :class="{ 'stocks-preview__chart-box--visible': isChartVisible }"
       >
@@ -128,7 +114,6 @@ onMounted(() => {
             />
 
             <div>
-             
               <h3 class="stocks-preview__chart-title">{{ visibleCompany.name }}</h3>
             </div>
           </div>

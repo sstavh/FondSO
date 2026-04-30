@@ -2,11 +2,10 @@
 import { ref } from 'vue'
 import StocksHoverPreview from '../components/choicEofGraphicsComponent/StocksHoverPreview.vue'
 import MarketStatsBar from '../components/graficComponents/MarketStatsBar.vue'
-import type { MarketCompany } from '~/data/marketCompanies'
-import { marketCompanies } from '~/data/marketCompanies'
+import type { MarketCompany } from '~/composables/useApi'
 import HeaderGraphs from '~/components/HeaderGraphs.vue'
 
-const selectedCompany = ref<MarketCompany>(marketCompanies[0]!)
+const selectedCompany = ref<MarketCompany | null>(null)
 
 const handleCompanyUpdate = (company: MarketCompany) => {
   selectedCompany.value = company
@@ -33,7 +32,7 @@ const handleCompanyUpdate = (company: MarketCompany) => {
       <div class="hero__info">
         <div class="hero__card">
           <span class="hero__label">Активна компанія</span>
-          <strong class="hero__value">{{ selectedCompany.name }}</strong>
+          <strong class="hero__value">{{ selectedCompany?.name ?? '...' }}</strong>
         </div>
 
        
@@ -47,7 +46,7 @@ const handleCompanyUpdate = (company: MarketCompany) => {
   </section>
 
   <main class="page-wrap">
-    <MarketStatsBar :company="selectedCompany" />
+    <MarketStatsBar v-if="selectedCompany" :company="selectedCompany" />
 
     <StocksHoverPreview @update:company="handleCompanyUpdate" />
   </main>

@@ -1,23 +1,21 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import AdvancedMarketChart from '../../components/graficComponents/AdvancedMarketChart.vue'
-import type { MarketCompany } from '~/data/marketCompanies'
-import { marketCompanies } from '~/data/marketCompanies'
+import type { MarketCompany } from '~/composables/useApi'
+import { useApi } from '~/composables/useApi'
 import StocksTickerTape from '~/components/graficComponents/StocksTickerTape.vue'
 import TradeOrdersPanel from '~/components/graficComponents/TradeOrdersPanel.vue'
 import OrdersBoard from '~/components/graficComponents/OrdersBoard.vue'
 import HeaderGraphs from '~/components/HeaderGraphs.vue'
 
 const route = useRoute()
+const api = useApi()
+const company = ref<MarketCompany | null>(null)
 
-const company = computed<MarketCompany>(() => {
+onMounted(async () => {
   const ticker = String(route.params.ticker).toUpperCase()
-
-  return (
-    marketCompanies.find((item) => item.ticker === ticker) ??
-    marketCompanies[0]!
-  )
+  company.value = await api.get<MarketCompany>(`/api/market/companies/${ticker}`)
 })
 </script>
 
@@ -30,11 +28,11 @@ const company = computed<MarketCompany>(() => {
       <div class="stock-page__hero-content">
         <p class="stock-page__hero-badge">Трейдинг • Ринок акцій</p>
         <h1 class="stock-page__hero-title">
-          Торгівля акцією {{ company.name }}
+          Торгівля акцією {{ company?.name ?? '...' }}
         </h1>
         <p class="stock-page__hero-text">
           Переглядай динаміку ціни, аналізуй ринкові зміни та створюй заявки на
-          купівлю або продаж для {{ company.name }} в одному місці.
+          купівлю або продаж для {{ company?.name ?? '...' }} в одному місці.
         </p>
       </div>
     </div>
@@ -47,16 +45,16 @@ const company = computed<MarketCompany>(() => {
 
     <div class="stock-layout">
       <div class="stock-layout__chart">
-        <AdvancedMarketChart :company="company" />
+        <AdvancedMarketChart v-if="company" :company="company" />
       </div>
 
       <div class="stock-layout__trade">
-        <TradeOrdersPanel :company="company" />
+        <TradeOrdersPanel v-if="company" :company="company" />
       </div>
     </div>
 
     <div class="stock-layout__orders">
-      <OrdersBoard :ticker="company.ticker" />
+      <OrdersBoard v-if="company" :ticker="company.ticker" />
     </div>
   </div>
 </template>

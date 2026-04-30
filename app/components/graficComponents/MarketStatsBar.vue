@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { MarketCompany } from '~/data/marketCompanies'
+import type { MarketCompany } from '~/composables/useApi'
 import { useMarketStats } from '../useMarketStats'
 
 const props = defineProps<{
