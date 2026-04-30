@@ -1,5 +1,5 @@
 import { ref, watch } from 'vue'
-import type { MarketCompany } from '~/data/marketCompanies'
+import type { MarketCompany } from '~/composables/useApi'
 
 export interface MarketStatsState {
   change24h: number
@@ -9,35 +9,45 @@ export interface MarketStatsState {
   totalVolume: number
 }
 
-const generateMarketStats = (basePrice: number): MarketStatsState => {
-  const change24h = Number(((Math.random() - 0.5) * basePrice * 0.08).toFixed(2))
-  const changePercent = Number(((change24h / basePrice) * 100).toFixed(2))
+const BASE_URL = 'http://localhost:8080'
 
-  const buyVolume = Math.round(Math.random() * 5000 + 2500)
-  const sellVolume = Math.round(Math.random() * 5000 + 2000)
-  const totalVolume = buyVolume + sellVolume
-
-  return {
-    change24h,
-    changePercent,
-    buyVolume,
-    sellVolume,
-    totalVolume,
-  }
+const apiGet = async <T>(path: string): Promise<T> => {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('fondso_token') ?? '' : ''
+  const res = await fetch(`${BASE_URL}${path}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  })
+  if (!res.ok) throw new Error(`API ${res.status}`)
+  return res.json()
 }
 
+const emptyStats = (): MarketStatsState => ({
+  change24h: 0,
+  changePercent: 0,
+  buyVolume: 0,
+  sellVolume: 0,
+  totalVolume: 0,
+})
+
 export const useMarketStats = (company: () => MarketCompany) => {
-  const stats = ref<MarketStatsState>(generateMarketStats(company().startPrice))
+  const stats = ref<MarketStatsState>(emptyStats())
 
-  watch(
-    () => company().id,
-    () => {
-      stats.value = generateMarketStats(company().startPrice)
-    },
-    { immediate: true }
-  )
-
-  return {
-    stats,
+  const fetchStats = async () => {
+    if (!company()) return
+    try {
+      const data = await apiGet<any>(`/api/market/companies/${company().ticker}/stats`)
+      stats.value = {
+        change24h: Number(data.change24h ?? 0),
+        changePercent: Number(data.changePercent ?? 0),
+        buyVolume: Number(data.buyVolume ?? 0),
+        sellVolume: Number(data.sellVolume ?? 0),
+        totalVolume: Number(data.totalVolume ?? 0),
+      }
+    } catch {
+      stats.value = emptyStats()
+    }
   }
+
+  watch(() => company()?.id, (id) => { if (id) fetchStats() }, { immediate: true })
+
+  return { stats }
 }

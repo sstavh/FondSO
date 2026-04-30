@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, onBeforeUnmount } from 'vue'
-import type { MarketCompany } from '~/data/marketCompanies'
+import type { MarketCompany } from '~/composables/useApi'
 import { useAdvancedMarketChart } from '~/components/useAdvancedMarketChart'
 
 const props = defineProps<{

@@ -176,118 +176,84 @@
 
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
-import { userProfile } from '~/data/userProfile'
+import { useRouter } from 'vue-router'
+import { useAuth } from '~/composables/useAuth'
+import { useStore } from '~/composables/useStore'
 import RegisterFlow from '~/components/LoginComponent/RegisterFlow.vue'
 
 type AuthMode = 'login' | 'register' | 'reset'
+
+const router = useRouter()
+const auth = useAuth()
+const store = useStore()
 
 const authMode = ref<AuthMode>('login')
 const message = ref('')
 const isError = ref(false)
 const showRegisterSteps = ref(false)
+const loading = ref(false)
 
-const loginForm = reactive({
-  email: '',
-  password: '',
-})
+const loginForm = reactive({ email: '', password: '' })
+const registerForm = reactive({ name: '', email: '', password: '', confirmPassword: '' })
+const resetForm = reactive({ email: '', newPassword: '', confirmNewPassword: '' })
 
-const registerForm = reactive({
-  name: '',
-  email: '',
-  password: '',
-  confirmPassword: '',
-})
-
-const resetForm = reactive({
-  email: '',
-  newPassword: '',
-  confirmNewPassword: '',
-})
-
-const clearMessage = () => {
-  message.value = ''
-  isError.value = false
-}
-
-const switchMode = (mode: AuthMode): void => {
-  authMode.value = mode
-  clearMessage()
-}
-
-const setError = (text: string) => {
-  message.value = text
-  isError.value = true
-}
-
-const setSuccess = (text: string) => {
-  message.value = text
-  isError.value = false
-}
+const clearMessage = () => { message.value = ''; isError.value = false }
+const switchMode = (mode: AuthMode) => { authMode.value = mode; clearMessage() }
+const setError = (text: string) => { message.value = text; isError.value = true }
+const setSuccess = (text: string) => { message.value = text; isError.value = false }
 
 const handleLogin = async (): Promise<void> => {
-  if (!loginForm.email.trim()) {
-    setError('Вкажіть email')
-    return
-  }
+  if (!loginForm.email.trim()) { setError('Вкажіть email'); return }
+  if (!loginForm.password.trim()) { setError('Вкажіть пароль'); return }
 
-  if (!loginForm.password.trim()) {
-    setError('Вкажіть пароль')
-    return
+  loading.value = true
+  try {
+    await auth.login(loginForm.email.trim(), loginForm.password)
+    await store.loadAll()
+    await router.push('/')
+  } catch (e: any) {
+    setError(e.message ?? 'Помилка входу')
+  } finally {
+    loading.value = false
   }
-
-  setSuccess(`Спроба входу для: ${loginForm.email}`)
 }
 
 const handleRegister = async (): Promise<void> => {
-  if (!registerForm.name.trim()) {
-    setError('Вкажіть імʼя')
-    return
+  if (!registerForm.name.trim()) { setError('Вкажіть імʼя'); return }
+  if (!registerForm.email.trim()) { setError('Вкажіть email'); return }
+  if (registerForm.password.length < 6) { setError('Пароль повинен містити мінімум 6 символів'); return }
+  if (registerForm.password !== registerForm.confirmPassword) { setError('Паролі не співпадають'); return }
+
+  loading.value = true
+  try {
+    await auth.register(registerForm.email.trim(), registerForm.password, registerForm.name.trim())
+    clearMessage()
+    showRegisterSteps.value = true
+  } catch (e: any) {
+    setError(e.message ?? 'Помилка реєстрації')
+  } finally {
+    loading.value = false
   }
-
-  if (!registerForm.email.trim()) {
-    setError('Вкажіть email')
-    return
-  }
-
-  if (registerForm.password.length < 6) {
-    setError('Пароль повинен містити мінімум 6 символів')
-    return
-  }
-
-  if (registerForm.password !== registerForm.confirmPassword) {
-    setError('Паролі не співпадають')
-    return
-  }
-
-  userProfile.firstName = registerForm.name
-  userProfile.email = registerForm.email
-
-  clearMessage()
-  showRegisterSteps.value = true
 }
 
 const handlePasswordChange = async (): Promise<void> => {
-  if (!resetForm.email.trim()) {
-    setError('Вкажіть email акаунта')
-    return
+  if (!resetForm.email.trim()) { setError('Вкажіть email акаунта'); return }
+  if (resetForm.newPassword.length < 6) { setError('Новий пароль повинен містити мінімум 6 символів'); return }
+  if (resetForm.newPassword !== resetForm.confirmNewPassword) { setError('Нові паролі не співпадають'); return }
+
+  loading.value = true
+  try {
+    await auth.resetPassword(resetForm.email.trim(), resetForm.newPassword)
+    resetForm.email = ''
+    resetForm.newPassword = ''
+    resetForm.confirmNewPassword = ''
+    authMode.value = 'login'
+    setSuccess('Пароль успішно змінено. Тепер увійдіть з новим паролем.')
+  } catch (e: any) {
+    setError(e.message ?? 'Помилка зміни пароля')
+  } finally {
+    loading.value = false
   }
-
-  if (resetForm.newPassword.length < 6) {
-    setError('Новий пароль повинен містити мінімум 6 символів')
-    return
-  }
-
-  if (resetForm.newPassword !== resetForm.confirmNewPassword) {
-    setError('Нові паролі не співпадають')
-    return
-  }
-
-  resetForm.email = ''
-  resetForm.newPassword = ''
-  resetForm.confirmNewPassword = ''
-
-  authMode.value = 'login'
-  setSuccess('Пароль успішно змінено. Тепер увійдіть з новим паролем.')
 }
 </script>
 

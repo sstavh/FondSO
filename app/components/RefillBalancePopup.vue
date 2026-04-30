@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { computed, reactive, watch } from 'vue'
-import {
-  balanceStore,
-  transactionsStore,
-} from '../data/userProfile'
+import { balanceStore } from '../data/userProfile'
 import type { Currency } from '../data/userProfile'
+import { useApi } from '~/composables/useApi'
+import { useStore } from '~/composables/useStore'
 
 const props = defineProps<{
   isOpen: boolean
@@ -173,7 +172,10 @@ const formatTransactionDate = () => {
   return new Date().toISOString().slice(0, 10)
 }
 
-const submitRefill = () => {
+const api = useApi()
+const store = useStore()
+
+const submitRefill = async () => {
   touched.amount = true
   touched.cardNumber = true
   touched.cardHolder = true
@@ -182,28 +184,12 @@ const submitRefill = () => {
 
   if (!isValid.value) return
 
-  const refillAmount = Number(form.amount)
-
-  balanceStore.balance += refillAmount
-  balanceStore.currency = form.currency
-
-  balanceStore.history.push({
-    date: formatHistoryDate(),
-    value: Number(balanceStore.balance.toFixed(2)),
-  })
-
-  transactionsStore.unshift({
-    id: Date.now(),
-    type: 'deposit',
-    assetName: 'Поповнення балансу',
-    ticker: 'BALANCE',
-    quantity: 1,
-    amount: refillAmount,
-    currency: form.currency,
-    date: formatTransactionDate(),
-    status: 'completed',
-    note: 'Поповнення з банківської картки',
-  })
+  try {
+    await api.post('/api/balance/deposit', { amount: Number(form.amount) })
+    await store.refreshBalance()
+  } catch (e) {
+    console.error('Deposit error:', e)
+  }
 
   resetForm()
   emit('close')

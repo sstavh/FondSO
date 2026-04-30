@@ -1,5 +1,27 @@
 <script setup lang="ts">
-import { trendingStocks } from '~/data/stocks'
+import { ref, onMounted } from 'vue'
+import { useApi } from '~/composables/useApi'
+
+interface TrendingStock {
+  id: number
+  name: string
+  ticker: string
+  price: number
+  changePercent: number
+  direction: 'up' | 'down'
+}
+
+const api = useApi()
+const trendingStocks = ref<TrendingStock[]>([])
+
+onMounted(async () => {
+  try {
+    const data = await api.get<TrendingStock[]>('/api/market/trending')
+    trendingStocks.value = data
+  } catch {
+    trendingStocks.value = []
+  }
+})
 
 const formatPrice = (value: number) => {
   return new Intl.NumberFormat('en-US', {

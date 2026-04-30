@@ -6,7 +6,7 @@ import type {
   OrderDurationUnit,
   TradeOrderItem,
 } from '../../data/userProfile'
-import type { MarketCompany } from '~/data/marketCompanies'
+import type { MarketCompany } from '~/composables/useApi'
 import {
   buyOrdersStore,
   orderPreviewStore,

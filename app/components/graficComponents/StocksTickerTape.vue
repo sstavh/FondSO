@@ -1,6 +1,14 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { marketCompanies } from '~/data/marketCompanies'
+import { ref, computed, onMounted } from 'vue'
+import type { MarketCompany } from '~/composables/useApi'
+import { useApi } from '~/composables/useApi'
+
+const api = useApi()
+const companies = ref<MarketCompany[]>([])
+
+onMounted(async () => {
+  companies.value = await api.get<MarketCompany[]>('/api/market/companies')
+})
 
 const formatPercent = (value: number) => {
   const sign = value >= 0 ? '+' : ''
@@ -8,7 +16,7 @@ const formatPercent = (value: number) => {
 }
 
 const tickerItems = computed(() => {
-  return marketCompanies.map((company) => {
+  return companies.value.map((company) => {
     const rawPercent =
       ((company.startPrice - ((company.minPrice + company.maxPrice) / 2)) /
         company.startPrice) *

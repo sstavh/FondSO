@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAuth } from '~/composables/useAuth'
+import { useStore } from '~/composables/useStore'
 import { userProfile } from '~/data/userProfile'
 import RegisterProgress from '~/components/LoginComponent/RegisterProgress.vue'
 import RegisterStepCountry from '~/components/LoginComponent/RegisterStepCountry.vue'
@@ -8,15 +10,19 @@ import RegisterStepPurpose from '~/components/LoginComponent/RegisterStepPurpose
 import RegisterStepProfile from '~/components/LoginComponent/RegisterStepProfile.vue'
 
 const router = useRouter()
+const auth = useAuth()
+const store = useStore()
 const currentStep = ref(2)
 
+const pendingData = ref({ country: '', purpose: '' })
+
 const handleCountryNext = (country: string) => {
-  userProfile.country = country
+  pendingData.value.country = country
   currentStep.value = 3
 }
 
 const handlePurposeNext = (purpose: string) => {
-  userProfile.purpose = purpose
+  pendingData.value.purpose = purpose
   currentStep.value = 4
 }
 
@@ -27,11 +33,26 @@ const handleProfileNext = async (payload: {
   phone: string
   privacyAccepted: boolean
 }) => {
-  userProfile.firstName = payload.firstName
-  userProfile.lastName = payload.lastName
-  userProfile.birthDate = payload.birthDate
-  userProfile.phone = payload.phone
-  userProfile.registrationCompleted = true
+  try {
+    await auth.updateProfile({
+      firstName: payload.firstName,
+      lastName: payload.lastName,
+      birthDate: payload.birthDate,
+      phone: payload.phone,
+      country: pendingData.value.country,
+      purpose: pendingData.value.purpose,
+      registrationCompleted: true,
+    } as any)
+    await store.loadAll()
+  } catch (e) {
+    userProfile.firstName = payload.firstName
+    userProfile.lastName = payload.lastName
+    userProfile.birthDate = payload.birthDate
+    userProfile.phone = payload.phone
+    userProfile.country = pendingData.value.country
+    userProfile.purpose = pendingData.value.purpose
+    userProfile.registrationCompleted = true
+  }
 
   await router.push('/')
 }

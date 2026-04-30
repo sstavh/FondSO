@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { computed, reactive, watch } from 'vue'
-import {
-  balanceStore,
-  transactionsStore,
-} from '../data/userProfile'
+import { balanceStore } from '../data/userProfile'
 import type { Currency } from '../data/userProfile'
+import { useApi } from '~/composables/useApi'
+import { useStore } from '~/composables/useStore'
 
 const props = defineProps<{
   isOpen: boolean
@@ -180,7 +179,10 @@ const formatTransactionDate = () => {
   return new Date().toISOString().slice(0, 10)
 }
 
-const submitWithdraw = () => {
+const api = useApi()
+const store = useStore()
+
+const submitWithdraw = async () => {
   touched.amount = true
   touched.cardNumber = true
   touched.cardHolder = true
@@ -189,28 +191,12 @@ const submitWithdraw = () => {
 
   if (!isValid.value) return
 
-  const withdrawAmount = Number(form.amount)
-
-  balanceStore.balance -= withdrawAmount
-  balanceStore.currency = form.currency
-
-  balanceStore.history.push({
-    date: formatHistoryDate(),
-    value: Number(balanceStore.balance.toFixed(2)),
-  })
-
-  transactionsStore.unshift({
-    id: Date.now(),
-    type: 'withdrawal',
-    assetName: 'Виведення коштів',
-    ticker: 'BALANCE',
-    quantity: 1,
-    amount: withdrawAmount,
-    currency: form.currency,
-    date: formatTransactionDate(),
-    status: 'completed',
-    note: 'Виведення на банківську картку',
-  })
+  try {
+    await api.post('/api/balance/withdraw', { amount: Number(form.amount) })
+    await store.refreshBalance()
+  } catch (e) {
+    console.error('Withdraw error:', e)
+  }
 
   resetForm()
   emit('close')
