@@ -8,8 +8,9 @@ import { orderPreviewStore } from '../../data/userProfile'
 
 type TradeTab = 'buy' | 'sell'
 
-defineProps<{
+const props = defineProps<{
   company: MarketCompany
+  currentPrice?: number
 }>()
 
 const activeTab = ref<TradeTab>('buy')
@@ -27,9 +28,9 @@ const closePopup = () => {
   <section class="trade-panel">
     <div class="trade-panel__card">
       <div class="trade-panel__head">
-        <h2 class="trade-panel__title">Торгівля акцією</h2>
+        <h2 class="trade-panel__title">Stock Trading</h2>
         <p class="trade-panel__text">
-          Оберіть тип заявки та заповніть усі обовʼязкові поля.
+          Select the order type and fill in all required fields.
         </p>
       </div>
 
@@ -40,7 +41,7 @@ const closePopup = () => {
           :class="{ active: activeTab === 'buy' }"
           @click="setTab('buy')"
         >
-          Купити
+          Buy
         </button>
 
         <button
@@ -49,13 +50,13 @@ const closePopup = () => {
           :class="{ active: activeTab === 'sell' }"
           @click="setTab('sell')"
         >
-          Продати
+          Sell
         </button>
       </div>
 
       <div class="trade-panel__content">
-        <BuyOrderForm v-if="activeTab === 'buy'" :company="company" />
-        <SellOrderForm v-else :company="company" />
+        <BuyOrderForm v-if="activeTab === 'buy'" :company="company" :current-price="props.currentPrice" />
+        <SellOrderForm v-else :company="company" :current-price="props.currentPrice" />
       </div>
     </div>
 

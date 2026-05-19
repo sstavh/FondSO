@@ -3,6 +3,7 @@
     <main>
       <NuxtPage />
     </main>
+    <OrderToast />
   </div>
 </template>
 
@@ -10,6 +11,7 @@
 import { onMounted } from 'vue'
 import { useAuth } from '~/composables/useAuth'
 import { useStore } from '~/composables/useStore'
+import OrderToast from '~/components/OrderToast.vue'
 
 const auth = useAuth()
 const store = useStore()

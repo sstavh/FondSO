@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { reactive, ref, onMounted } from 'vue'
 import { useApi } from '~/composables/useApi'
 
 interface TrendingStock {
   id: number
   name: string
   ticker: string
+  logo: string
   price: number
   changePercent: number
   direction: 'up' | 'down'
@@ -13,6 +14,7 @@ interface TrendingStock {
 
 const api = useApi()
 const trendingStocks = ref<TrendingStock[]>([])
+const stockLogoErrors = reactive(new Set<string>())
 
 onMounted(async () => {
   try {
@@ -36,8 +38,8 @@ const formatPrice = (value: number) => {
   <section class="stocks-card">
     <div class="stocks-card__head">
       <div>
-        <p class="stocks-card__label">Ринок</p>
-        <h3 class="stocks-card__title">Які акції в тренді</h3>
+        <p class="stocks-card__label">Market</p>
+        <h3 class="stocks-card__title">Trending Stocks</h3>
       </div>
     </div>
 
@@ -48,8 +50,15 @@ const formatPrice = (value: number) => {
         class="stock-item"
       >
         <div class="stock-item__left">
-          <div class="stock-item__avatar">
-            {{ stock.ticker.slice(0, 1) }}
+          <div class="stock-item__logo-wrap">
+            <img
+              v-if="!stockLogoErrors.has(stock.ticker)"
+              :src="`https://assets.parqet.com/logos/symbol/${stock.ticker}`"
+              :alt="stock.name"
+              class="stock-item__logo"
+              @error="stockLogoErrors.add(stock.ticker)"
+            />
+            <span v-else class="stock-item__avatar-fallback">{{ stock.ticker.slice(0, 1) }}</span>
           </div>
 
           <div class="stock-item__info">
@@ -126,18 +135,29 @@ const formatPrice = (value: number) => {
   min-width: 0;
 }
 
-.stock-item__avatar {
+.stock-item__logo-wrap {
   width: 42px;
   height: 42px;
-  border-radius: 50%;
-  background: var(--accent-light);
-  color: var(--accent);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--glass-border);
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.stock-item__logo {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.stock-item__avatar-fallback {
+  color: var(--accent);
   font-size: var(--text-sm);
   font-weight: var(--font-bold);
-  flex-shrink: 0;
 }
 
 .stock-item__info {

@@ -26,13 +26,13 @@ onMounted(async () => {
   <div class="stock-page">
     <div class="stock-page__hero">
       <div class="stock-page__hero-content">
-        <p class="stock-page__hero-badge">Трейдинг • Ринок акцій</p>
+        <p class="stock-page__hero-badge">Trading • Stock Market</p>
         <h1 class="stock-page__hero-title">
-          Торгівля акцією {{ company?.name ?? '...' }}
+          Trading {{ company?.name ?? '...' }}
         </h1>
         <p class="stock-page__hero-text">
-          Переглядай динаміку ціни, аналізуй ринкові зміни та створюй заявки на
-          купівлю або продаж для {{ company?.name ?? '...' }} в одному місці.
+          Track price movements, analyze market changes, and place buy or sell
+          orders for {{ company?.name ?? '...' }} all in one place.
         </p>
       </div>
     </div>
@@ -49,12 +49,12 @@ onMounted(async () => {
       </div>
 
       <div class="stock-layout__trade">
-        <TradeOrdersPanel v-if="company" :company="company" />
+        <TradeOrdersPanel v-if="company" :company="company" :current-price="company.startPrice" />
       </div>
     </div>
 
     <div class="stock-layout__orders">
-      <OrdersBoard v-if="company" :ticker="company.ticker" />
+      <OrdersBoard />
     </div>
   </div>
 </template>

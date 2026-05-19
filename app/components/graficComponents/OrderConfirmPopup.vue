@@ -21,13 +21,13 @@ const formatMoney = (value: number, currency: string) => {
       <div class="popup-card" @click.stop>
         <div class="popup-head">
           <h3 class="popup-title">
-            {{ order.side === 'buy' ? 'Заявка на купівлю' : 'Заявка на продаж' }}
+            {{ order.side === 'buy' ? 'Buy Order' : 'Sell Order' }}
           </h3>
           <button class="popup-close" type="button" @click="emit('close')">✕</button>
         </div>
 
         <div class="popup-asset">
-          <img :src="order.logo" :alt="order.assetName" class="popup-asset__logo" />
+          <img :src="`https://assets.parqet.com/logos/symbol/${order.ticker}`" :alt="order.assetName" class="popup-asset__logo" />
           <div>
             <p class="popup-asset__ticker">{{ order.ticker }}</p>
             <p class="popup-asset__name">{{ order.assetName }}</p>
@@ -36,38 +36,38 @@ const formatMoney = (value: number, currency: string) => {
 
         <div class="popup-grid">
           <div class="popup-item">
-            <span>Сума</span>
+            <span>Amount</span>
             <strong>{{ formatMoney(order.amount, order.currency) }}</strong>
           </div>
 
           <div class="popup-item">
-            <span>Кількість</span>
+            <span>Quantity</span>
             <strong>{{ order.quantity }}</strong>
           </div>
 
           <div class="popup-item">
-            <span>Ліміт ціни</span>
+            <span>Limit Price</span>
             <strong>{{ formatMoney(order.limitPrice, order.currency) }}</strong>
           </div>
 
           <div class="popup-item">
-            <span>Термін</span>
+            <span>Duration</span>
             <strong>
               {{
                 order.durationUnit === 'unlimited'
-                  ? 'Без обмеження'
-                  : `${order.durationValue} ${order.durationUnit === 'hours' ? 'год.' : 'дн.'}`
+                  ? 'Unlimited'
+                  : `${order.durationValue} ${order.durationUnit === 'hours' ? 'hr.' : 'd.'}`
               }}
             </strong>
           </div>
 
           <div class="popup-item" v-if="order.quantityMode">
-            <span>Тип купівлі</span>
-            <strong>{{ order.quantityMode === 'whole' ? 'Ціла акція' : 'Частина акції' }}</strong>
+            <span>Purchase Type</span>
+            <strong>{{ order.quantityMode === 'whole' ? 'Whole share' : 'Fractional share' }}</strong>
           </div>
 
           <div class="popup-item">
-            <span>Прогрес</span>
+            <span>Progress</span>
             <strong>{{ order.progress }}%</strong>
           </div>
         </div>

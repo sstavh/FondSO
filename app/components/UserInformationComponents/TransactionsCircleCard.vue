@@ -6,13 +6,13 @@ const isVisible = ref(false)
 
 const boughtTotal = computed(() =>
   transactionsStore
-    .filter((item) => item.type === 'deposit')
+    .filter((item) => item.type === 'buy' || item.type === 'deposit')
     .reduce((sum, item) => sum + Math.abs(item.amount), 0)
 )
 
 const soldTotal = computed(() =>
   transactionsStore
-    .filter((item) => item.type === 'withdrawal' || item.type === 'payment')
+    .filter((item) => item.type === 'sell' || item.type === 'withdrawal')
     .reduce((sum, item) => sum + Math.abs(item.amount), 0)
 )
 

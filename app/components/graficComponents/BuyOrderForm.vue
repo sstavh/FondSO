@@ -1,89 +1,109 @@
 <script setup lang="ts">
-import { computed, reactive } from 'vue'
-import type {
-  BuyQuantityMode,
-  Currency,
-  OrderDurationUnit,
-  TradeOrderItem,
-} from '../../data/userProfile'
+import { computed, reactive, ref, watch } from 'vue'
+import type { BuyQuantityMode, Currency, OrderDurationUnit } from '../../data/userProfile'
 import type { MarketCompany } from '~/composables/useApi'
-import {
-  buyOrdersStore,
-  orderPreviewStore,
-} from '../../data/userProfile'
+import { balanceStore, buyOrdersStore, orderPreviewStore } from '../../data/userProfile'
+import { useApi } from '~/composables/useApi'
+import { useStore } from '~/composables/useStore'
 
 const props = defineProps<{
   company: MarketCompany
+  currentPrice?: number
 }>()
 
-const currencies: Currency[] = ['USD', 'EUR', 'UAH', 'PLN']
+const api = useApi()
+const { mapOrder, refreshHoldings } = useStore()
+const submitting = ref(false)
+const errorMsg = ref('')
+
+const currencies: Currency[] = ['USD', 'EUR']
 const durationUnits: Exclude<OrderDurationUnit, 'unlimited'>[] = ['hours', 'days']
 
 const form = reactive({
   currency: 'USD' as Currency,
-  amount: '',
   quantity: '',
   quantityMode: 'whole' as BuyQuantityMode,
   limitPrice: '',
-  durationValue: '',
+  durationValue: '24',
   durationUnit: 'hours' as Exclude<OrderDurationUnit, 'unlimited'>,
 })
 
-const isValid = computed(() => {
-  return Boolean(
-    props.company &&
-      form.currency &&
-      form.amount &&
-      Number(form.amount) > 0 &&
-      form.quantity &&
-      Number(form.quantity) > 0 &&
-      form.limitPrice &&
-      Number(form.limitPrice) > 0 &&
-      form.durationValue &&
-      Number(form.durationValue) > 0 &&
-      form.durationUnit
-  )
+watch(
+  () => props.currentPrice,
+  (price) => {
+    if (price && !form.limitPrice) {
+      form.limitPrice = price.toFixed(2)
+    }
+  },
+  { immediate: true },
+)
+
+const availableBalance = computed(() => balanceStore.balance)
+
+const maxQty = computed(() => {
+  const price = Number(form.limitPrice)
+  if (!price || price <= 0) return 0
+  return Math.floor(availableBalance.value / price)
 })
 
-const createOrder = () => {
-  if (!isValid.value) return
+const totalCost = computed(() => {
+  const qty = Number(form.quantity)
+  const price = Number(form.limitPrice)
+  return qty > 0 && price > 0 ? (qty * price).toFixed(2) : '0.00'
+})
 
-  const now = new Date()
-  const expires = new Date(now)
+const insufficientBalance = computed(() =>
+  Number(totalCost.value) > 0 && Number(totalCost.value) > availableBalance.value
+)
 
-  if (form.durationUnit === 'hours') {
-    expires.setHours(expires.getHours() + Number(form.durationValue))
-  } else {
-    expires.setDate(expires.getDate() + Number(form.durationValue))
+const isValid = computed(() =>
+  Boolean(
+    props.company &&
+    form.currency &&
+    Number(form.quantity) > 0 &&
+    Number(form.limitPrice) > 0 &&
+    Number(form.durationValue) > 0 &&
+    form.durationUnit,
+  ),
+)
+
+const setMaxQty = () => {
+  if (maxQty.value > 0) form.quantity = String(maxQty.value)
+}
+
+const createOrder = async () => {
+  if (!isValid.value || submitting.value) return
+  submitting.value = true
+  errorMsg.value = ''
+  try {
+    const amount = Number(totalCost.value)
+    const res = await api.post<any>('/api/orders', {
+      side: 'buy',
+      assetName: props.company.name,
+      ticker: props.company.ticker,
+      logo: props.company.logo,
+      currency: form.currency,
+      amount,
+      quantity: Number(form.quantity),
+      quantityMode: form.quantityMode,
+      limitPrice: Number(form.limitPrice),
+      durationUnit: form.durationUnit,
+      durationValue: Number(form.durationValue),
+    })
+    const order = mapOrder(res)
+    buyOrdersStore.unshift(order)
+    orderPreviewStore.order = order
+    orderPreviewStore.isOpen = true
+    balanceStore.balance = Math.max(0, balanceStore.balance - amount)
+    await refreshHoldings()
+    form.quantity = ''
+    form.limitPrice = props.currentPrice ? props.currentPrice.toFixed(2) : ''
+    form.durationValue = '24'
+  } catch (e: any) {
+    errorMsg.value = e.message ?? 'Failed to create order'
+  } finally {
+    submitting.value = false
   }
-
-  const order: TradeOrderItem = {
-    id: Date.now(),
-    side: 'buy',
-    assetName: props.company.name,
-    ticker: props.company.ticker,
-    logo: props.company.logo,
-    currency: form.currency,
-    amount: Number(form.amount),
-    quantity: Number(form.quantity),
-    quantityMode: form.quantityMode,
-    limitPrice: Number(form.limitPrice),
-    durationUnit: form.durationUnit,
-    durationValue: Number(form.durationValue),
-    createdAt: now.toISOString(),
-    expiresAt: expires.toISOString(),
-    progress: 0,
-    status: 'active',
-  }
-
-  buyOrdersStore.unshift(order)
-  orderPreviewStore.order = order
-  orderPreviewStore.isOpen = true
-
-  form.amount = ''
-  form.quantity = ''
-  form.limitPrice = ''
-  form.durationValue = ''
 }
 </script>
 
@@ -91,17 +111,22 @@ const createOrder = () => {
   <section class="trade-card">
     <div class="trade-form">
       <label class="trade-field">
-        <span>Акція</span>
+        <span>Stock</span>
         <div class="trade-asset">
-          <img :src="company.logo" :alt="company.name" class="trade-asset__logo" />
+          <img :src="`https://assets.parqet.com/logos/symbol/${company.ticker}`" :alt="company.name" class="trade-asset__logo" />
           <div class="trade-asset__fixed">
             {{ company.name }} ({{ company.ticker }})
           </div>
         </div>
       </label>
 
+      <div class="trade-balance-row">
+        <span class="trade-balance-label">Available balance</span>
+        <span class="trade-balance-value">${{ availableBalance.toFixed(2) }}</span>
+      </div>
+
       <label class="trade-field">
-        <span>Валюта</span>
+        <span>Currency</span>
         <select v-model="form.currency" class="trade-input">
           <option v-for="currency in currencies" :key="currency" :value="currency">
             {{ currency }}
@@ -110,50 +135,59 @@ const createOrder = () => {
       </label>
 
       <label class="trade-field">
-        <span>Скільки грошей</span>
-        <input v-model="form.amount" type="number" min="0" class="trade-input" />
-      </label>
-
-      <label class="trade-field">
-        <span>Скільки купити</span>
-        <input v-model="form.quantity" type="number" min="0" step="0.01" class="trade-input" />
-      </label>
-
-      <label class="trade-field">
-        <span>Тип купівлі</span>
-        <select v-model="form.quantityMode" class="trade-input">
-          <option value="whole">Ціла акція</option>
-          <option value="partial">Частина акції</option>
-        </select>
-      </label>
-
-      <label class="trade-field">
-        <span>Ліміт ціни</span>
+        <span>Limit Price</span>
         <input v-model="form.limitPrice" type="number" min="0" step="0.01" class="trade-input" />
       </label>
 
+      <label class="trade-field">
+        <span>Quantity</span>
+        <div class="trade-qty-row">
+          <input v-model="form.quantity" type="number" min="0" step="0.01" class="trade-input trade-input--flex" />
+          <button type="button" class="trade-max-btn" @click="setMaxQty" :disabled="maxQty === 0">
+            Max {{ maxQty }}
+          </button>
+        </div>
+      </label>
+
+      <label class="trade-field">
+        <span>Purchase Type</span>
+        <select v-model="form.quantityMode" class="trade-input">
+          <option value="whole">Whole share</option>
+          <option value="partial">Fractional share</option>
+        </select>
+      </label>
+
       <div class="trade-row">
-        <label class="trade-field ttt">
-          <span>Час</span>
+        <label class="trade-field">
+          <span>Duration</span>
           <input v-model="form.durationValue" type="number" min="1" class="trade-input" />
         </label>
 
-        <label class="trade-field tt">
-          <span>Одиниця</span>
+        <label class="trade-field">
+          <span>Unit</span>
           <select v-model="form.durationUnit" class="trade-input">
-            <option
-              v-for="unit in durationUnits"
-              :key="unit"
-              :value="unit"
-            >
-              {{ unit === 'hours' ? 'Години' : 'Дні' }}
+            <option v-for="unit in durationUnits" :key="unit" :value="unit">
+              {{ unit === 'hours' ? 'Hours' : 'Days' }}
             </option>
           </select>
         </label>
       </div>
 
-      <button class="trade-submit" type="button" :disabled="!isValid" @click="createOrder">
-        Створити заявку на купівлю
+      <div class="trade-summary" v-if="Number(form.quantity) > 0 && Number(form.limitPrice) > 0">
+        <span>Total cost</span>
+        <strong :class="{ 'trade-summary--over': insufficientBalance }">
+          ${{ totalCost }}
+        </strong>
+      </div>
+
+      <p v-if="insufficientBalance" class="trade-error">
+        Недостатньо коштів. Баланс: ${{ availableBalance.toFixed(2) }}
+      </p>
+
+      <p v-if="errorMsg" class="trade-error">{{ errorMsg }}</p>
+
+      <button class="trade-submit" type="button" :disabled="!isValid || submitting" @click="createOrder">
+        {{ submitting ? 'Placing order...' : 'Place Buy Order' }}
       </button>
     </div>
   </section>
@@ -168,14 +202,12 @@ const createOrder = () => {
 }
 
 .trade-form {
-    width: 370px;
   display: flex;
   flex-direction: column;
   gap: 14px;
 }
 
 .trade-field {
-  width: 370px;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -187,7 +219,6 @@ const createOrder = () => {
 }
 
 .trade-input {
-
   min-height: 46px;
   padding: 0 14px;
   border-radius: 14px;
@@ -196,10 +227,14 @@ const createOrder = () => {
   color: var(--text-primary);
 }
 
+.trade-input--flex {
+  flex: 1;
+}
+
 .trade-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 42px;
+  gap: 12px;
 }
 
 .trade-asset {
@@ -229,6 +264,77 @@ const createOrder = () => {
   flex: 1;
 }
 
+.trade-balance-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--glass-border);
+}
+
+.trade-balance-label {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.trade-balance-value {
+  color: #22c55e;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.trade-qty-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.trade-max-btn {
+  white-space: nowrap;
+  padding: 0 14px;
+  min-height: 46px;
+  border-radius: 14px;
+  border: 1px solid var(--accent);
+  background: transparent;
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.trade-max-btn:hover:not(:disabled) {
+  background: rgba(var(--accent-rgb), 0.1);
+}
+
+.trade-max-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.trade-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--glass-border);
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.trade-summary strong {
+  color: var(--text-primary);
+  font-size: 15px;
+}
+
+.trade-summary--over {
+  color: #ef4444 !important;
+}
+
 .trade-submit {
   min-height: 48px;
   border: none;
@@ -244,11 +350,13 @@ const createOrder = () => {
   cursor: not-allowed;
 }
 
-.tt{
-  width: 170px;
+.trade-error {
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(248, 113, 113, 0.12);
+  border: 1px solid rgba(248, 113, 113, 0.28);
+  color: #fca5a5;
+  font-size: 13px;
 }
-.ttt{
-  width: 150px;
-}
-
 </style>
