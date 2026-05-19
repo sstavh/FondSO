@@ -1,61 +1,60 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import AdvancedMarketChart from '../../components/graficComponents/AdvancedMarketChart.vue'
-import type { MarketCompany } from '~/data/marketCompanies'
-import { marketCompanies } from '~/data/marketCompanies'
+import type { MarketCompany } from '~/composables/useApi'
+import { useApi } from '~/composables/useApi'
 import StocksTickerTape from '~/components/graficComponents/StocksTickerTape.vue'
 import TradeOrdersPanel from '~/components/graficComponents/TradeOrdersPanel.vue'
 import OrdersBoard from '~/components/graficComponents/OrdersBoard.vue'
 import HeaderGraphs from '~/components/HeaderGraphs.vue'
 
 const route = useRoute()
+const api = useApi()
+const company = ref<MarketCompany | null>(null)
 
-const company = computed<MarketCompany>(() => {
+onMounted(async () => {
   const ticker = String(route.params.ticker).toUpperCase()
-
-  return (
-    marketCompanies.find((item) => item.ticker === ticker) ??
-    marketCompanies[0]!
-  )
+  company.value = await api.get<MarketCompany>(`/api/market/companies/${ticker}`)
 })
 </script>
 
 <template>
   <HeaderGraphs />
-  <StocksTickerTape class="StocksTickerTape" />
+ 
 
   <div class="stock-page">
     <div class="stock-page__hero">
       <div class="stock-page__hero-content">
-        <p class="stock-page__hero-badge">Трейдинг • Ринок акцій</p>
+        <p class="stock-page__hero-badge">Trading • Stock Market</p>
         <h1 class="stock-page__hero-title">
-          Торгівля акцією {{ company.name }}
+          Trading {{ company?.name ?? '...' }}
         </h1>
         <p class="stock-page__hero-text">
-          Переглядай динаміку ціни, аналізуй ринкові зміни та створюй заявки на
-          купівлю або продаж для {{ company.ticker }} в одному місці.
+          Track price movements, analyze market changes, and place buy or sell
+          orders for {{ company?.name ?? '...' }} all in one place.
         </p>
       </div>
     </div>
 
     <div class="stock-page__head">
-      <p class="stock-page__label">{{ company.ticker }}</p>
-      <h2 class="stock-page__title">{{ company.name }}</h2>
+      
+     
     </div>
+     <StocksTickerTape class="StocksTickerTape" />
 
     <div class="stock-layout">
       <div class="stock-layout__chart">
-        <AdvancedMarketChart :company="company" />
+        <AdvancedMarketChart v-if="company" :company="company" />
       </div>
 
       <div class="stock-layout__trade">
-        <TradeOrdersPanel :company="company" />
+        <TradeOrdersPanel v-if="company" :company="company" :current-price="company.startPrice" />
       </div>
     </div>
 
     <div class="stock-layout__orders">
-      <OrdersBoard :ticker="company.ticker" />
+      <OrdersBoard />
     </div>
   </div>
 </template>
@@ -129,7 +128,7 @@ const company = computed<MarketCompany>(() => {
 .stock-layout {
   display: grid;
   grid-template-columns: minmax(0, 1.7fr) minmax(340px, 0.9fr);
-  gap: 16px;
+  gap: 46px;
   align-items: start;
 }
 
@@ -144,7 +143,8 @@ const company = computed<MarketCompany>(() => {
 }
 
 .StocksTickerTape {
-  margin-top: 30px;
+  margin-top: 15px;
+  margin-bottom: 15px;
 }
 
 @media (max-width: 1100px) {

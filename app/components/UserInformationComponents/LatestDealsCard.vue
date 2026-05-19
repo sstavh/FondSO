@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, reactive } from 'vue'
 import { transactionsStore } from '~/data/userProfile'
+
+const dealLogoErrors = reactive(new Set<string>())
 
 const latestDeals = computed(() => {
   return [...transactionsStore]
@@ -18,8 +20,10 @@ const formatCurrency = (value: number, currency: string) => {
 
 const formatAction = (type: string) => {
   const map: Record<string, string> = {
-    buy: 'Куплено',
-    sell: 'Продано',
+    buy: 'Bought',
+    sell: 'Sold',
+    BUY: 'Bought',
+    SELL: 'Sold',
   }
 
   return map[type] || type
@@ -27,9 +31,12 @@ const formatAction = (type: string) => {
 
 const formatStatus = (status: string) => {
   const map: Record<string, string> = {
-    completed: 'Проведено',
-    pending: 'В обробці',
-    failed: 'Помилка',
+    completed: 'Completed',
+    COMPLETED: 'Completed',
+    pending: 'Pending',
+    PENDING: 'Pending',
+    failed: 'Failed',
+    FAILED: 'Failed',
   }
 
   return map[status] || status
@@ -49,8 +56,8 @@ const statusClass = (status: string) => {
 <template>
   <section class="deals-card">
     <div class="deals-card__head">
-      <p class="deals-card__label">Історія</p>
-      <h3 class="deals-card__title">Останні угоди</h3>
+      <p class="deals-card__label">History</p>
+      <h3 class="deals-card__title">Latest Deals</h3>
     </div>
 
     <div class="deals-list">
@@ -60,13 +67,26 @@ const statusClass = (status: string) => {
         class="deal-item"
       >
         <div class="deal-item__left">
-          <p class="deal-item__title">
-            {{ formatAction(deal.type) }} {{ deal.assetName }}
-          </p>
+          <div class="deal-item__logo-wrap">
+            <img
+              v-if="!dealLogoErrors.has(deal.ticker)"
+              :src="`https://assets.parqet.com/logos/symbol/${deal.ticker}`"
+              :alt="deal.assetName"
+              class="deal-item__logo"
+              @error="dealLogoErrors.add(deal.ticker)"
+            />
+            <span v-else class="deal-item__logo-fallback">{{ deal.ticker.slice(0, 1) }}</span>
+          </div>
 
-          <p class="deal-item__meta">
-            {{ deal.ticker }} · {{ deal.quantity }} шт · {{ deal.date }}
-          </p>
+          <div>
+            <p class="deal-item__title">
+              {{ formatAction(deal.type) }} {{ deal.assetName }}
+            </p>
+
+            <p class="deal-item__meta">
+              {{ deal.ticker }} · {{ deal.quantity }} shares · {{ deal.date }}
+            </p>
+          </div>
         </div>
 
         <div class="deal-item__right">
@@ -128,7 +148,35 @@ const statusClass = (status: string) => {
 }
 
 .deal-item__left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   min-width: 0;
+}
+
+.deal-item__logo-wrap {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--glass-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.deal-item__logo {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.deal-item__logo-fallback {
+  color: var(--accent);
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
 }
 
 .deal-item__title {

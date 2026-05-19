@@ -2,11 +2,10 @@
 import { ref } from 'vue'
 import StocksHoverPreview from '../components/choicEofGraphicsComponent/StocksHoverPreview.vue'
 import MarketStatsBar from '../components/graficComponents/MarketStatsBar.vue'
-import type { MarketCompany } from '~/data/marketCompanies'
-import { marketCompanies } from '~/data/marketCompanies'
+import type { MarketCompany } from '~/composables/useApi'
 import HeaderGraphs from '~/components/HeaderGraphs.vue'
 
-const selectedCompany = ref<MarketCompany>(marketCompanies[0]!)
+const selectedCompany = ref<MarketCompany | null>(null)
 
 const handleCompanyUpdate = (company: MarketCompany) => {
   selectedCompany.value = company
@@ -18,28 +17,28 @@ const handleCompanyUpdate = (company: MarketCompany) => {
 
   <section class="hero">
     <div class="hero__content">
-      <p class="hero__badge">Фондовий ринок • Аналітика в реальному часі</p>
+      <p class="hero__badge">Stock Market • Real-Time Analytics</p>
 
       <h1 class="hero__title">
-        Професійні графіки акцій та ринкова статистика
+        Professional Stock Charts and Market Statistics
       </h1>
 
       <p class="hero__text">
-        Відстежуйте популярні компанії, аналізуйте зміни ціни, обсяг торгів та
-        поведінку ринку. Наведіть курсор на компанію зліва, щоб миттєво
-        переглянути її графік і поточні показники.
+        Track popular companies, analyze price changes, trading volumes and
+        market behavior. Hover over a company on the left to instantly
+        preview its chart and current metrics.
       </p>
 
       <div class="hero__info">
         <div class="hero__card">
-          <span class="hero__label">Активна компанія</span>
-          <strong class="hero__value">{{ selectedCompany.name }}</strong>
+          <span class="hero__label">Active Company</span>
+          <strong class="hero__value">{{ selectedCompany?.name ?? '...' }}</strong>
         </div>
 
        
 
         <div class="hero__card">
-          <span class="hero__label">Режим</span>
+          <span class="hero__label">Mode</span>
           <strong class="hero__value">Live Preview</strong>
         </div>
       </div>
@@ -47,7 +46,7 @@ const handleCompanyUpdate = (company: MarketCompany) => {
   </section>
 
   <main class="page-wrap">
-    <MarketStatsBar :company="selectedCompany" />
+    <MarketStatsBar v-if="selectedCompany" :company="selectedCompany" />
 
     <StocksHoverPreview @update:company="handleCompanyUpdate" />
   </main>

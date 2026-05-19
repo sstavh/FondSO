@@ -3,7 +3,10 @@ import { computed } from 'vue'
 import { transactionsStore } from '~/data/userProfile'
 
 const completedTransactions = computed(() =>
-  transactionsStore.filter((item) => item.status === 'completed')
+  [...transactionsStore]
+    .filter((item) => item.status === 'completed')
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, 7)
 )
 
 const formatCurrency = (value: number, currency: string) => {
@@ -16,10 +19,10 @@ const formatCurrency = (value: number, currency: string) => {
 
 const formatType = (type: string) => {
   const map: Record<string, string> = {
-    deposit: 'Поповнення',
-    withdrawal: 'Виведення',
-    transfer: 'Переказ',
-    payment: 'Оплата',
+    deposit: 'Deposit',
+    withdrawal: 'Withdrawal',
+    transfer: 'Transfer',
+    payment: 'Payment',
   }
 
   return map[type] || type
@@ -27,9 +30,9 @@ const formatType = (type: string) => {
 
 const formatStatus = (status: string) => {
   const map: Record<string, string> = {
-    completed: 'Проведено',
-    pending: 'В обробці',
-    failed: 'Помилка',
+    completed: 'Completed',
+    pending: 'Pending',
+    failed: 'Failed',
   }
 
   return map[status] || status
@@ -40,12 +43,12 @@ const formatStatus = (status: string) => {
   <section class="transactions-card">
     <div class="transactions-card__head">
       <div>
-        <p class="transactions-card__label">Проведені транзакції</p>
-        <h2 class="transactions-card__title">Історія операцій</h2>
+        <p class="transactions-card__label">Completed Transactions</p>
+        <h2 class="transactions-card__title">Transaction History</h2>
       </div>
 
       <div class="transactions-card__count">
-        {{ completedTransactions.length }} операцій
+        Останні {{ completedTransactions.length }}
       </div>
     </div>
 
@@ -72,7 +75,7 @@ const formatStatus = (status: string) => {
     </div>
 
     <div v-else class="transactions-empty">
-      Транзакцій поки немає
+      No transactions yet
     </div>
   </section>
 </template>
@@ -121,7 +124,25 @@ const formatStatus = (status: string) => {
 .transactions-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
+  max-height: 320px;
+  overflow-y: auto;
+  padding-right: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--glass-border) transparent;
+}
+
+.transactions-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.transactions-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.transactions-list::-webkit-scrollbar-thumb {
+  background: var(--glass-border);
+  border-radius: 999px;
 }
 
 .transaction-item {
@@ -129,7 +150,7 @@ const formatStatus = (status: string) => {
   align-items: center;
   justify-content: space-between;
   gap: var(--space-md);
-  padding: 16px;
+  padding: 10px 14px;
   border-radius: var(--radius-md);
   border: 1px solid var(--glass-border);
   background: rgba(255, 255, 255, 0.03);
