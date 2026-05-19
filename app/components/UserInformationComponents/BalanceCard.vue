@@ -1,9 +1,13 @@
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue'
 import { balanceStore, type Currency } from '../../data/userProfile'
+import { useMarketPrices } from '~/composables/useMarketPrices'
 
 const selectedCurrency = ref<Currency>(balanceStore.currency)
 const isChartVisible = ref(false)
+const { totalPortfolioValue, totalProfitLoss } = useMarketPrices()
+const showGoalPanel = ref(false)
+const earningGoalInput = ref('')
 
 const exchangeRates: Record<Currency, number> = {
   UAH: 1,
@@ -32,6 +36,31 @@ const currentBalance = computed(() => {
   const rate = exchangeRates[selectedCurrency.value] ?? 1
   return Number(balanceStore.balance ?? 0) * rate
 })
+
+const portfolioValueConverted = computed(() => {
+  const rate = exchangeRates[selectedCurrency.value] ?? 1
+  return totalPortfolioValue.value * rate
+})
+
+const profitConverted = computed(() => {
+  const rate = exchangeRates[selectedCurrency.value] ?? 1
+  return totalProfitLoss.value * rate
+})
+
+const earningGoal = computed(() => {
+  const v = parseFloat(earningGoalInput.value)
+  return isNaN(v) || v <= 0 ? 0 : v
+})
+
+const goalProgress = computed(() => {
+  if (!earningGoal.value) return 0
+  const pct = (profitConverted.value / earningGoal.value) * 100
+  return Math.min(Math.max(pct, 0), 100)
+})
+
+function saveGoal() {
+  localStorage.setItem('earningGoal', earningGoalInput.value)
+}
 
 const previousBalance = computed(() => {
   const history = convertedHistory.value
@@ -102,6 +131,8 @@ function formatMoney(value: number, currency: Currency) {
 }
 
 onMounted(() => {
+  const saved = localStorage.getItem('earningGoal')
+  if (saved) earningGoalInput.value = saved
   requestAnimationFrame(() => {
     isChartVisible.value = true
   })
@@ -125,6 +156,44 @@ onMounted(() => {
         <option value="PLN">{{ currencySymbols.PLN }} PLN</option>
       </select>
     </div>
+
+    <button
+      v-if="portfolioValueConverted > 0"
+      class="portfolio-badge"
+      :class="{ 'portfolio-badge--visible': isChartVisible, 'portfolio-badge--active': showGoalPanel }"
+      @click="showGoalPanel = !showGoalPanel"
+    >
+      <span class="portfolio-badge__label">Акції:</span>
+      <span class="portfolio-badge__value">{{ formatMoney(portfolioValueConverted, selectedCurrency) }}</span>
+    </button>
+
+    <Transition name="goal">
+      <div v-if="showGoalPanel && portfolioValueConverted > 0" class="goal-panel">
+        <p class="goal-panel__title">Ціль прибутку</p>
+        <div class="goal-panel__row">
+          <span class="goal-panel__label">Поточний прибуток:</span>
+          <span class="goal-panel__profit" :class="profitConverted >= 0 ? 'profit-positive' : 'profit-negative'">
+            {{ profitConverted >= 0 ? '+' : '' }}{{ formatMoney(profitConverted, selectedCurrency) }}
+          </span>
+        </div>
+        <div class="goal-panel__input-row">
+          <span class="goal-panel__currency">{{ currencySymbols[selectedCurrency] }}</span>
+          <input
+            v-model="earningGoalInput"
+            type="number"
+            class="goal-panel__input"
+            placeholder="Бажаний прибуток..."
+            @input="saveGoal"
+          />
+        </div>
+        <div v-if="earningGoal > 0" class="goal-panel__progress-wrap">
+          <div class="goal-panel__bar">
+            <div class="goal-panel__fill" :style="{ width: goalProgress + '%' }"></div>
+          </div>
+          <span class="goal-panel__pct">{{ goalProgress.toFixed(0) }}%</span>
+        </div>
+      </div>
+    </Transition>
 
     <div
       class="balance-change"
@@ -215,6 +284,158 @@ onMounted(() => {
   border-radius: 10px;
   padding: 8px 12px;
   outline: none;
+}
+
+.portfolio-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(124, 58, 237, 0.12);
+  border: 1px solid rgba(124, 58, 237, 0.25);
+  opacity: 0;
+  transform: translateY(8px);
+  transition:
+    opacity 0.45s ease 0.1s,
+    transform 0.45s ease 0.1s,
+    background 0.2s ease,
+    border-color 0.2s ease;
+  cursor: pointer;
+  appearance: none;
+  font-family: inherit;
+}
+
+.portfolio-badge--visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.portfolio-badge--active,
+.portfolio-badge:hover {
+  background: rgba(124, 58, 237, 0.22);
+  border-color: rgba(124, 58, 237, 0.45);
+}
+
+.portfolio-badge__label {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.portfolio-badge__value {
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.goal-panel {
+  margin-top: 10px;
+  padding: 14px;
+  border-radius: 14px;
+  background: rgba(124, 58, 237, 0.07);
+  border: 1px solid rgba(124, 58, 237, 0.18);
+}
+
+.goal-panel__title {
+  margin: 0 0 10px;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.goal-panel__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.goal-panel__label {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.goal-panel__profit {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.profit-positive {
+  color: #22c55e;
+}
+
+.profit-negative {
+  color: #ef4444;
+}
+
+.goal-panel__input-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.goal-panel__currency {
+  color: var(--text-secondary);
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.goal-panel__input {
+  flex: 1;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 13px;
+  outline: none;
+  font-family: inherit;
+}
+
+.goal-panel__input:focus {
+  border-color: rgba(124, 58, 237, 0.45);
+}
+
+.goal-panel__progress-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.goal-panel__bar {
+  flex: 1;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.goal-panel__fill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--accent);
+  transition: width 0.4s ease;
+}
+
+.goal-panel__pct {
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 700;
+  min-width: 32px;
+  text-align: right;
+}
+
+.goal-enter-active,
+.goal-leave-active {
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.goal-enter-from,
+.goal-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
 }
 
 .balance-change {

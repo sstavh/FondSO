@@ -5,8 +5,7 @@ import LatestDealsCard from './UserInformationComponents/LatestDealsCard.vue';
 import TransactionsCircleCard from './UserInformationComponents/TransactionsCircleCard.vue';
 import TransactionTotalCard from './UserInformationComponents/TransactionTotalCard.vue';
 import TrendingStocksCard from './UserInformationComponents/TrendingStocksCard.vue';
-
-
+import MyHoldingsCard from './UserInformationComponents/MyHoldingsCard.vue';
 </script>
 
 
@@ -20,10 +19,11 @@ import TrendingStocksCard from './UserInformationComponents/TrendingStocksCard.v
          <GoalTargetCard class="GoalTargetCard "/>
   <LatestDealsCard class="LatestDealsCard"/>
   </div>
- 
- 
+
+
   <TransactionTotalCard class="TransactionTotalCard"/>
   <TrendingStocksCard class="TrendingStocksCard"/>
+  <MyHoldingsCard class="MyHoldingsCard"/>
  </div>
 </template>
 
@@ -47,6 +47,10 @@ import TrendingStocksCard from './UserInformationComponents/TrendingStocksCard.v
         width: 1060px;
 }
 .TrendingStocksCard{
+        width: 1085px;
+        margin-bottom: 20px;
+}
+.MyHoldingsCard{
         width: 1085px;
         margin-bottom: 80px;
 }

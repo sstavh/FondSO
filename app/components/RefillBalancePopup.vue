@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { computed, reactive, watch } from 'vue'
-import {
-  balanceStore,
-  transactionsStore,
-} from '../data/userProfile'
+import { balanceStore } from '../data/userProfile'
 import type { Currency } from '../data/userProfile'
+import { useApi } from '~/composables/useApi'
+import { useStore } from '~/composables/useStore'
 
 const props = defineProps<{
   isOpen: boolean
@@ -14,7 +13,7 @@ const emit = defineEmits<{
   (e: 'close'): void
 }>()
 
-const currencies: Currency[] = ['UAH', 'USD', 'EUR', 'PLN']
+const currencies: Currency[] = ['USD', 'EUR']
 
 const form = reactive({
   amount: '',
@@ -102,45 +101,45 @@ const formattedCardHolder = computed({
 
 const amountError = computed(() => {
   if (!touched.amount) return ''
-  if (!form.amount) return 'Вкажіть суму.'
-  if (!/^\d+(\.\d{1,2})?$/.test(form.amount)) return 'Дозволено тільки числа і до 2 знаків після коми.'
-  if (Number(form.amount) <= 0) return 'Сума повинна бути більшою за 0.'
+  if (!form.amount) return 'Enter amount.'
+  if (!/^\d+(\.\d{1,2})?$/.test(form.amount)) return 'Numbers only, up to 2 decimal places.'
+  if (Number(form.amount) <= 0) return 'Amount must be greater than 0.'
   return ''
 })
 
 const cardNumberError = computed(() => {
   if (!touched.cardNumber) return ''
   const digits = form.cardNumber.replace(/\s/g, '')
-  if (!digits) return 'Вкажіть номер картки.'
-  if (digits.length !== 16) return 'Номер картки повинен містити 16 цифр.'
+  if (!digits) return 'Enter card number.'
+  if (digits.length !== 16) return 'Card number must be 16 digits.'
   return ''
 })
 
 const cardHolderError = computed(() => {
   if (!touched.cardHolder) return ''
   const value = form.cardHolder.trim()
-  if (!value) return 'Вкажіть імʼя власника.'
-  if (value.length < 3) return 'Мінімум 3 символи.'
-  if (!/^[A-Za-zА-Яа-яІіЇїЄєҐґ\s'-]+$/.test(value)) return 'Дозволені тільки літери, пробіл, апостроф і дефіс.'
+  if (!value) return 'Enter cardholder name.'
+  if (value.length < 3) return 'Minimum 3 characters.'
+  if (!/^[A-Za-zА-Яа-яІіЇїЄєҐґ\s'-]+$/.test(value)) return 'Only letters, spaces, apostrophes and hyphens.'
   return ''
 })
 
 const expiryError = computed(() => {
   if (!touched.expiry) return ''
-  if (!form.expiry) return 'Вкажіть термін дії.'
-  if (!/^\d{2}\/\d{2}$/.test(form.expiry)) return 'Формат повинен бути MM/YY.'
+  if (!form.expiry) return 'Enter expiry date.'
+  if (!/^\d{2}\/\d{2}$/.test(form.expiry)) return 'Format must be MM/YY.'
 
   const [monthText] = form.expiry.split('/')
   const month = Number(monthText)
 
-  if (month < 1 || month > 12) return 'Місяць повинен бути від 01 до 12.'
+  if (month < 1 || month > 12) return 'Month must be between 01 and 12.'
   return ''
 })
 
 const cvvError = computed(() => {
   if (!touched.cvv) return ''
-  if (!form.cvv) return 'Вкажіть CVV.'
-  if (!/^\d{3}$/.test(form.cvv)) return 'CVV повинен містити 3 цифри.'
+  if (!form.cvv) return 'Enter CVV.'
+  if (!/^\d{3}$/.test(form.cvv)) return 'CVV must be 3 digits.'
   return ''
 })
 
@@ -173,7 +172,10 @@ const formatTransactionDate = () => {
   return new Date().toISOString().slice(0, 10)
 }
 
-const submitRefill = () => {
+const api = useApi()
+const store = useStore()
+
+const submitRefill = async () => {
   touched.amount = true
   touched.cardNumber = true
   touched.cardHolder = true
@@ -182,28 +184,12 @@ const submitRefill = () => {
 
   if (!isValid.value) return
 
-  const refillAmount = Number(form.amount)
-
-  balanceStore.balance += refillAmount
-  balanceStore.currency = form.currency
-
-  balanceStore.history.push({
-    date: formatHistoryDate(),
-    value: Number(balanceStore.balance.toFixed(2)),
-  })
-
-  transactionsStore.unshift({
-    id: Date.now(),
-    type: 'deposit',
-    assetName: 'Поповнення балансу',
-    ticker: 'BALANCE',
-    quantity: 1,
-    amount: refillAmount,
-    currency: form.currency,
-    date: formatTransactionDate(),
-    status: 'completed',
-    note: 'Поповнення з банківської картки',
-  })
+  try {
+    await api.post('/api/balance/deposit', { amount: Number(form.amount) })
+    await store.refreshBalance()
+  } catch (e) {
+    console.error('Deposit error:', e)
+  }
 
   resetForm()
   emit('close')
@@ -223,9 +209,9 @@ const submitRefill = () => {
       >
         <div class="refill-popup__head">
           <div>
-            <p class="refill-popup__eyebrow">Баланс</p>
+            <p class="refill-popup__eyebrow">Balance</p>
             <h3 class="refill-popup__title">
-              Поповнення рахунку
+              Add Funds
             </h3>
           </div>
 
@@ -240,7 +226,7 @@ const submitRefill = () => {
 
         <div class="refill-popup__form">
           <label class="refill-field">
-            <span>Сума</span>
+            <span>Amount</span>
 
             <input
               v-model="form.amount"
@@ -248,14 +234,14 @@ const submitRefill = () => {
               inputmode="decimal"
               maxlength="12"
               class="refill-input"
-              placeholder="Введіть суму"
+              placeholder="Enter amount"
               @blur="touched.amount = true"
             />
             <small v-if="amountError" class="refill-error">{{ amountError }}</small>
           </label>
 
           <label class="refill-field">
-            <span>Валюта</span>
+            <span>Currency</span>
 
             <select
               v-model="form.currency"
@@ -272,7 +258,7 @@ const submitRefill = () => {
           </label>
 
           <label class="refill-field refill-field--full">
-            <span>Номер картки</span>
+            <span>Card Number</span>
 
             <input
               v-model="formattedCardNumber"
@@ -287,7 +273,7 @@ const submitRefill = () => {
           </label>
 
           <label class="refill-field refill-field--full">
-            <span>Власник картки</span>
+            <span>Cardholder Name</span>
 
             <input
               v-model="formattedCardHolder"
@@ -339,7 +325,7 @@ const submitRefill = () => {
             class="refill-popup__cancel"
             @click="emit('close')"
           >
-            Скасувати
+            Cancel
           </button>
 
           <button
@@ -348,7 +334,7 @@ const submitRefill = () => {
             :disabled="!isValid"
             @click="submitRefill"
           >
-            Поповнити
+            Deposit
           </button>
         </div>
       </div>

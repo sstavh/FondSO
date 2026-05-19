@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { MarketCompany } from '~/data/marketCompanies'
+import type { MarketCompany } from '~/composables/useApi'
 import { useLiveMarketChart } from '../../logig/useLiveMarketChart'
 
 const props = defineProps<{
@@ -35,8 +35,14 @@ const formatPrice = (value: number) => {
 <template>
   <section class="market-chart-card">
     <div class="market-chart-card__header">
-      <div>
-        <h3 class="market-chart-card__title">{{ company.name }}</h3>
+      <div class="market-chart-card__brand">
+        <div class="market-chart-card__logo-wrap">
+          <img :src="`https://assets.parqet.com/logos/symbol/${company.ticker}`" :alt="company.name" class="market-chart-card__logo" />
+        </div>
+        <div>
+          <h3 class="market-chart-card__title">{{ company.name }}</h3>
+          <p class="market-chart-card__ticker">{{ company.ticker }}</p>
+        </div>
       </div>
 
       <div class="market-chart-card__stats">
@@ -118,11 +124,42 @@ const formatPrice = (value: number) => {
   font-size: var(--text-sm);
 }
 
+.market-chart-card__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.market-chart-card__logo-wrap {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--glass-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.market-chart-card__logo {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+}
+
 .market-chart-card__title {
   margin: 0;
   color: var(--text-primary);
   font-size: var(--text-lg);
   font-weight: var(--font-bold);
+}
+
+.market-chart-card__ticker {
+  margin: 2px 0 0;
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
 }
 
 .market-chart-card__stats {
