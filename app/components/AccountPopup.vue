@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import type { UserProfile } from '~/data/userProfile'
 import { userProfile } from '~/data/userProfile'
+import { useApi } from '~/composables/useApi'
 
 const props = defineProps<{
   isOpen: boolean
@@ -14,19 +15,20 @@ const emit = defineEmits<{
 }>()
 
 const router = useRouter()
+const api = useApi()
 
 const fullName = computed(() => {
-  return `${props.userProfile.firstName || ''} ${props.userProfile.lastName || ''}`.trim() || 'Користувач'
+  return `${props.userProfile.firstName || ''} ${props.userProfile.lastName || ''}`.trim() || 'User'
 })
 
 const formattedPurpose = computed(() => {
-  if (props.userProfile.purpose === 'investment') return 'Для інвестування'
-  if (props.userProfile.purpose === 'trading') return 'Для трейдингу'
-  return 'Не вказано'
+  if (props.userProfile.purpose === 'investment') return 'For investing'
+  if (props.userProfile.purpose === 'trading') return 'For trading'
+  return 'Not set'
 })
 
 const formattedBirthDate = computed(() => {
-  if (!props.userProfile.birthDate) return 'Не вказано'
+  if (!props.userProfile.birthDate) return 'Not set'
 
   const date = new Date(props.userProfile.birthDate)
 
@@ -39,9 +41,45 @@ const formattedBirthDate = computed(() => {
 
 const registrationStatus = computed(() => {
   return props.userProfile.registrationCompleted
-    ? 'Реєстрацію завершено'
-    : 'Реєстрацію не завершено'
+    ? 'Registration complete'
+    : 'Registration incomplete'
 })
+
+const showGoalForm = ref(false)
+const goalInput = ref(0)
+const currentGoal = ref(0)
+const goalLoading = ref(false)
+const goalError = ref('')
+
+const fetchGoal = async () => {
+  try {
+    const res = await api.get<{ targetAmount: number; earnedAmount: number }>('/api/goal')
+    currentGoal.value = Number(res.targetAmount) || 0
+    goalInput.value = currentGoal.value
+  } catch {
+    // якщо ціль ще не встановлена — ігноруємо помилку
+  }
+}
+
+watch(() => props.isOpen, (val) => {
+  if (val) fetchGoal()
+})
+
+const saveGoal = async () => {
+  const val = Number(goalInput.value)
+  if (Number.isNaN(val) || val < 0) return
+  goalLoading.value = true
+  goalError.value = ''
+  try {
+    const res = await api.patch<{ targetAmount: number }>('/api/goal', { targetAmount: val })
+    currentGoal.value = Number(res.targetAmount) || val
+    showGoalForm.value = false
+  } catch (e: unknown) {
+    goalError.value = e instanceof Error ? e.message : 'Помилка збереження'
+  } finally {
+    goalLoading.value = false
+  }
+}
 
 const logout = () => {
   userProfile.firstName = ''
@@ -87,7 +125,7 @@ const logout = () => {
         </h3>
 
         <p class="account-popup__email">
-          {{ userProfile.email || 'Email не вказано' }}
+          {{ userProfile.email || 'Email not set' }}
         </p>
 
         <div class="account-popup__status">
@@ -98,46 +136,75 @@ const logout = () => {
       <div class="account-popup__content">
         <div class="account-popup__grid">
           <div class="info-card">
-            <p class="info-card__label">Ім'я</p>
+            <p class="info-card__label">First Name</p>
             <p class="info-card__value">
-              {{ userProfile.firstName || 'Не вказано' }}
+              {{ userProfile.firstName || 'Not set' }}
             </p>
           </div>
 
           <div class="info-card">
-            <p class="info-card__label">Прізвище</p>
+            <p class="info-card__label">Last Name</p>
             <p class="info-card__value">
-              {{ userProfile.lastName || 'Не вказано' }}
+              {{ userProfile.lastName || 'Not set' }}
             </p>
           </div>
 
           <div class="info-card">
-            <p class="info-card__label">Країна</p>
+            <p class="info-card__label">Country</p>
             <p class="info-card__value">
-              {{ userProfile.country || 'Не вказано' }}
+              {{ userProfile.country || 'Not set' }}
             </p>
           </div>
 
           <div class="info-card">
-            <p class="info-card__label">Мета акаунта</p>
+            <p class="info-card__label">Account Purpose</p>
             <p class="info-card__value">
               {{ formattedPurpose }}
             </p>
           </div>
 
           <div class="info-card">
-            <p class="info-card__label">Дата народження</p>
+            <p class="info-card__label">Date of Birth</p>
             <p class="info-card__value">
               {{ formattedBirthDate }}
             </p>
           </div>
 
           <div class="info-card">
-            <p class="info-card__label">Номер телефону</p>
+            <p class="info-card__label">Phone Number</p>
             <p class="info-card__value">
-              {{ userProfile.phone || 'Не вказано' }}
+              {{ userProfile.phone || 'Not set' }}
             </p>
           </div>
+        </div>
+
+        <button
+          class="goal-btn"
+          type="button"
+          @click="showGoalForm = !showGoalForm"
+        >
+          Скільки ти хочеш заробити?
+        </button>
+
+        <div v-if="showGoalForm" class="goal-form">
+          <p class="goal-form__label">Введи ціль заробітку</p>
+          <div class="goal-form__row">
+            <input
+              v-model.number="goalInput"
+              class="goal-form__input"
+              type="number"
+              min="0"
+              placeholder="Наприклад: 50000"
+              :disabled="goalLoading"
+            />
+            <button class="goal-form__save" type="button" :disabled="goalLoading" @click="saveGoal">
+              {{ goalLoading ? '...' : 'Зберегти' }}
+            </button>
+          </div>
+          <p v-if="goalError" class="goal-form__error">{{ goalError }}</p>
+          <p v-else-if="currentGoal > 0" class="goal-form__current">
+            Поточна ціль: {{ currentGoal.toLocaleString('uk-UA') }} ₴
+          </p>
         </div>
 
         <button
@@ -255,6 +322,86 @@ const logout = () => {
   margin: 0;
   color: var(--text-primary);
   font-weight: 600;
+}
+
+.goal-btn {
+  width: 100%;
+  min-height: 50px;
+  border: 2px solid var(--accent-color, #6366f1);
+  border-radius: 16px;
+  background: transparent;
+  color: var(--accent-color, #6366f1);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s ease;
+  margin-bottom: 12px;
+}
+
+.goal-btn:hover {
+  background: var(--accent-light, rgba(99, 102, 241, 0.12));
+  transform: translateY(-1px);
+}
+
+.goal-form {
+  padding: 16px;
+  border-radius: 16px;
+  background: var(--glass-bg);
+  margin-bottom: 12px;
+}
+
+.goal-form__label {
+  margin: 0 0 10px;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.goal-form__row {
+  display: flex;
+  gap: 10px;
+}
+
+.goal-form__input {
+  flex: 1;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--glass-border);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 15px;
+  outline: none;
+}
+
+.goal-form__input:focus {
+  border-color: var(--accent-color, #6366f1);
+}
+
+.goal-form__save {
+  padding: 10px 18px;
+  border-radius: 12px;
+  border: none;
+  background: var(--accent-color, #6366f1);
+  color: white;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.goal-form__save:hover {
+  opacity: 0.85;
+}
+
+.goal-form__current {
+  margin: 10px 0 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.goal-form__error {
+  margin: 10px 0 0;
+  color: #ef4444;
+  font-size: 13px;
 }
 
 .logout-btn {

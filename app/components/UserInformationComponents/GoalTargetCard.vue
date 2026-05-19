@@ -1,17 +1,19 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { goalStore, balanceStore } from '~/data/userProfile'
 
 const isVisible = ref(false)
 
+const earnedAmount = computed(() => balanceStore.balance)
+
 const remainingAmount = computed(() => {
-  const value = goalStore.targetAmount - goalStore.earnedAmount
+  const value = goalStore.targetAmount - earnedAmount.value
   return value > 0 ? value : 0
 })
 
 const progressPercent = computed(() => {
   if (!goalStore.targetAmount) return 0
-  const percent = Math.round((goalStore.earnedAmount / goalStore.targetAmount) * 100)
+  const percent = Math.round((earnedAmount.value / goalStore.targetAmount) * 100)
   return percent > 100 ? 100 : percent
 })
 
@@ -24,6 +26,10 @@ const formatCurrency = (value: number) => {
     maximumFractionDigits: 0,
   }).format(value)
 }
+
+watch(progressPercent, (val) => {
+  animatedProgress.value = val
+})
 
 onMounted(() => {
   requestAnimationFrame(() => {
@@ -64,8 +70,8 @@ onMounted(() => {
 
     <div class="goal-card__stats" :class="{ 'goal-card__stats--visible': isVisible }">
       <div class="goal-stat">
-        <p class="goal-stat__label">Вже зароблено</p>
-        <p class="goal-stat__value">{{ formatCurrency(goalStore.earnedAmount) }}</p>
+        <p class="goal-stat__label">Поточний баланс</p>
+        <p class="goal-stat__value">{{ formatCurrency(earnedAmount) }}</p>
       </div>
 
       <div class="goal-stat">

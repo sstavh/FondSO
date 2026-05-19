@@ -189,8 +189,14 @@ onBeforeUnmount(() => {
 <template>
   <section ref="cardRef" class="advanced-chart">
     <div class="advanced-chart__top">
-      <div>
-        <h2 class="advanced-chart__title">{{ company.name }}</h2>
+      <div class="advanced-chart__brand">
+        <div class="advanced-chart__logo-wrap">
+          <img :src="`https://assets.parqet.com/logos/symbol/${company.ticker}`" :alt="company.name" class="advanced-chart__logo" />
+        </div>
+        <div>
+          <h2 class="advanced-chart__title">{{ company.name }}</h2>
+          <p class="advanced-chart__ticker">{{ company.ticker }}</p>
+        </div>
       </div>
 
       <div class="advanced-chart__stats">
@@ -226,13 +232,13 @@ onBeforeUnmount(() => {
 
     <div class="advanced-chart__toolbar">
       <div class="toolbar-section">
-        <span class="toolbar-section__label">Період</span>
+        <span class="toolbar-section__label">Period</span>
         <button
           v-for="item in ['1D', '1W', '1M', '3M']"
           :key="item"
           class="toolbar-btn"
           :class="{ active: timeframe === item }"
-          :title="`Показати ${item}`"
+          :title="`Show ${item}`"
           @click="setTimeframe(item as '1D' | '1W' | '1M' | '3M')"
         >
           {{ item }}
@@ -240,56 +246,56 @@ onBeforeUnmount(() => {
       </div>
 
       <div class="toolbar-section">
-        <span class="toolbar-section__label">Навігація</span>
-        <button class="toolbar-btn" title="Зменшити" @click="zoomOut">-</button>
-        <button class="toolbar-btn" title="Збільшити" @click="zoomIn">+</button>
-        <button class="toolbar-btn" title="Скинути (R)" @click="resetView">Reset</button>
+        <span class="toolbar-section__label">Navigation</span>
+        <button class="toolbar-btn" title="Zoom out" @click="zoomOut">-</button>
+        <button class="toolbar-btn" title="Zoom in" @click="zoomIn">+</button>
+        <button class="toolbar-btn" title="Reset (R)" @click="resetView">Reset</button>
       </div>
 
       <div class="toolbar-section">
-        <span class="toolbar-section__label">Малювання</span>
+        <span class="toolbar-section__label">Drawing</span>
         <button
           class="toolbar-btn"
           :class="{ active: drawMode === 'trend' }"
-          title="Лінія тренду (L)"
+          title="Trend line (L)"
           @click="setDrawMode('trend')"
         >
-          Лінія
+          Line
         </button>
 
         <button
           class="toolbar-btn"
           :class="{ active: drawMode === 'horizontal' }"
-          title="Горизонтальна лінія (H)"
+          title="Horizontal line (H)"
           @click="setDrawMode('horizontal')"
         >
-          Горизонталь
+          Horizontal
         </button>
 
         <button
           class="toolbar-btn"
           :class="{ active: drawMode === 'vertical' }"
-          title="Вертикальна лінія (V)"
+          title="Vertical line (V)"
           @click="setDrawMode('vertical')"
         >
-          Вертикаль
+          Vertical
         </button>
 
-        <button class="toolbar-btn" title="Видалити останню" @click="removeLastDrawing">
-          Назад
+        <button class="toolbar-btn" title="Remove last" @click="removeLastDrawing">
+          Undo
         </button>
 
-        <button class="toolbar-btn" title="Очистити все (C)" @click="clearDrawings">
-          Очистити
+        <button class="toolbar-btn" title="Clear all (C)" @click="clearDrawings">
+          Clear
         </button>
       </div>
 
       <div class="toolbar-section">
-        <span class="toolbar-section__label">Режими</span>
+        <span class="toolbar-section__label">Modes</span>
         <button
           class="toolbar-btn"
           :class="{ active: isLive }"
-          title="Live режим"
+          title="Live mode"
           @click="toggleLive"
         >
           Live
@@ -298,7 +304,7 @@ onBeforeUnmount(() => {
         <button
           class="toolbar-btn"
           :class="{ active: isFullscreen }"
-          title="На весь екран (F)"
+          title="Fullscreen (F)"
           @click="toggleFullscreen"
         >
           Fullscreen
@@ -309,11 +315,11 @@ onBeforeUnmount(() => {
     </div>
 
     <div class="advanced-chart__footer-hints">
-      <span>Колесо миші — zoom</span>
-      <span>Drag — переміщення</span>
+      <span>Mouse wheel — zoom</span>
+      <span>Drag — pan</span>
       <span>Dbl click — reset</span>
-      <span>L / H / V — інструменти</span>
-      <span>Backspace — видалити останню</span>
+      <span>L / H / V — drawing tools</span>
+      <span>Backspace — remove last</span>
     </div>
 
     <div class="advanced-chart__legend">
@@ -494,8 +500,8 @@ onBeforeUnmount(() => {
         }"
       >
         <p class="chart-tooltip__title">{{ company.ticker }}</p>
-        <p class="chart-tooltip__row">Час: {{ hoverPoint.time }}</p>
-        <p class="chart-tooltip__row">Ціна: {{ formatPrice(hoverPoint.value) }}</p>
+        <p class="chart-tooltip__row">Time: {{ hoverPoint.time }}</p>
+        <p class="chart-tooltip__row">Price: {{ formatPrice(hoverPoint.value) }}</p>
         <p class="chart-tooltip__row">High: {{ formatPrice(highValue) }}</p>
         <p class="chart-tooltip__row">Low: {{ formatPrice(lowValue) }}</p>
       </div>
@@ -527,11 +533,42 @@ onBeforeUnmount(() => {
   font-size: 12px;
 }
 
+.advanced-chart__brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.advanced-chart__logo-wrap {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--glass-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.advanced-chart__logo {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+}
+
 .advanced-chart__title {
   margin: 0;
   color: var(--text-primary);
   font-size: 22px;
   font-weight: 800;
+}
+
+.advanced-chart__ticker {
+  margin: 2px 0 0;
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
 }
 
 .advanced-chart__stats {

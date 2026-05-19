@@ -57,15 +57,16 @@ const repeatedTickerItems = computed(() => [
     <div class="ticker-tape__viewport">
       <div class="ticker-tape__track">
         <div class="ticker-tape__group">
-          <article
+          <NuxtLink
             v-for="item in repeatedTickerItems"
             :key="item.uid"
+            :to="`/stocks/${item.ticker}`"
             class="ticker-card"
           >
             <div class="ticker-card__left">
               <div class="ticker-card__logo-wrap">
                 <img
-                  :src="item.logo"
+                  :src="`https://assets.parqet.com/logos/symbol/${item.ticker}`"
                   :alt="item.name"
                   class="ticker-card__logo"
                 />
@@ -89,7 +90,7 @@ const repeatedTickerItems = computed(() => [
                 {{ formatPercent(item.percent) }}
               </p>
             </div>
-          </article>
+          </NuxtLink>
         </div>
       </div>
     </div>
@@ -140,6 +141,14 @@ const repeatedTickerItems = computed(() => [
   justify-content: space-between;
   gap: 12px;
   flex-shrink: 0;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.ticker-card:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--accent);
 }
 
 .ticker-card__left {

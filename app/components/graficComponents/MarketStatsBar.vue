@@ -24,7 +24,7 @@ const formatSigned = (num: number) => {
 <template>
   <section class="stats-bar">
     <div class="stats-card">
-      <p class="stats-card__label">24H зміна</p>
+      <p class="stats-card__label">24H Change</p>
       <p
         class="stats-card__value"
         :class="{
@@ -40,27 +40,27 @@ const formatSigned = (num: number) => {
     </div>
 
     <div class="stats-card">
-      <p class="stats-card__label">Купили</p>
+      <p class="stats-card__label">Bought</p>
       <p class="stats-card__value stats-card__value--buy">
         {{ formatNumber(stats.buyVolume) }}
       </p>
-      <p class="stats-card__sub">обсяг покупок</p>
+      <p class="stats-card__sub">buy volume</p>
     </div>
 
     <div class="stats-card">
-      <p class="stats-card__label">Продали</p>
+      <p class="stats-card__label">Sold</p>
       <p class="stats-card__value stats-card__value--sell">
         {{ formatNumber(stats.sellVolume) }}
       </p>
-      <p class="stats-card__sub">обсяг продажів</p>
+      <p class="stats-card__sub">sell volume</p>
     </div>
 
     <div class="stats-card">
-      <p class="stats-card__label">Обсяг</p>
+      <p class="stats-card__label">Volume</p>
       <p class="stats-card__value">
         {{ formatNumber(stats.totalVolume) }}
       </p>
-      <p class="stats-card__sub">усього за 24h</p>
+      <p class="stats-card__sub">total 24h</p>
     </div>
   </section>
 </template>

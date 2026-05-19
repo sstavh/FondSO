@@ -15,6 +15,22 @@ const hoveredCompanyId = ref<number>(0)
 const visibleCompanyId = ref<number>(0)
 const isChartVisible = ref(false)
 
+const EXCHANGE_MAP: Record<string, { name: string; color: string }> = {
+  AAPL:  { name: 'NASDAQ', color: '#0066cc' },
+  TSLA:  { name: 'NASDAQ', color: '#0066cc' },
+  NVDA:  { name: 'NASDAQ', color: '#0066cc' },
+  AMZN:  { name: 'NASDAQ', color: '#0066cc' },
+  MSFT:  { name: 'NASDAQ', color: '#0066cc' },
+  META:  { name: 'NASDAQ', color: '#0066cc' },
+  NFLX:  { name: 'NASDAQ', color: '#0066cc' },
+  GOOGL: { name: 'NASDAQ', color: '#0066cc' },
+  AMD:   { name: 'NASDAQ', color: '#0066cc' },
+  INTC:  { name: 'NASDAQ', color: '#0066cc' },
+}
+
+const getExchange = (ticker: string) =>
+  EXCHANGE_MAP[ticker] ?? { name: 'NYSE', color: '#004a80' }
+
 let hoverTimer: ReturnType<typeof setTimeout> | null = null
 
 const hoveredCompany = computed(() =>
@@ -72,7 +88,7 @@ onMounted(async () => {
           <div class="stock-item__left-row">
             <div class="stock-item__logo-wrap">
               <img
-                :src="company.logo"
+                :src="`https://assets.parqet.com/logos/symbol/${company.ticker}`"
                 :alt="company.name"
                 class="stock-item__logo"
               />
@@ -80,7 +96,13 @@ onMounted(async () => {
 
             <div class="stock-item__info">
               <p class="stock-item__name">{{ company.name }}</p>
-             
+              <div class="stock-item__meta">
+                <span class="stock-item__ticker">{{ company.ticker }}</span>
+                <span
+                  class="stock-item__exchange"
+                  :style="{ background: getExchange(company.ticker).color }"
+                >{{ getExchange(company.ticker).name }}</span>
+              </div>
             </div>
           </div>
 
@@ -108,7 +130,7 @@ onMounted(async () => {
         <div class="stocks-preview__chart-head">
           <div class="stocks-preview__chart-brand">
             <img
-              :src="visibleCompany.logo"
+              :src="`https://assets.parqet.com/logos/symbol/${visibleCompany.ticker}`"
               :alt="visibleCompany.name"
               class="stocks-preview__chart-logo"
             />
@@ -250,10 +272,27 @@ onMounted(async () => {
   font-weight: var(--font-semibold);
 }
 
+.stock-item__meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+
 .stock-item__ticker {
   margin: 0;
   color: var(--text-secondary);
   font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.stock-item__exchange {
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.03em;
 }
 
 .stock-item__arrow {
