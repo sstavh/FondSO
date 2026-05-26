@@ -1,6 +1,9 @@
-target/
+node_modules/
+.nuxt/
+.output/
+dist/
+.cache/
 *.class
 .DS_Store
 .idea/
 *.iml
-node_modules
