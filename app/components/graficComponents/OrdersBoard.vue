@@ -99,7 +99,7 @@ onUnmounted(() => {
 <template>
   <section class="orders-board">
     <div class="orders-board__head">
-      <h3 class="orders-board__title">Active Orders</h3>
+      <h3 class="orders-board__title">Активні ордери</h3>
     </div>
 
     <div class="orders-list" v-if="visibleOrders.length">
@@ -124,7 +124,7 @@ onUnmounted(() => {
             <p class="orders-item__name">{{ order.assetName }}</p>
             <p class="orders-item__meta">
               <span :class="order.side === 'buy' ? 'tag-buy' : 'tag-sell'">
-                {{ order.side === 'buy' ? 'Buy' : 'Sell' }}
+                {{ order.side === 'buy' ? 'Купівля' : 'Продаж' }}
               </span>
             </p>
           </div>

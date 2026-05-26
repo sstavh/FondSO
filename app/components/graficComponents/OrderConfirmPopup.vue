@@ -21,7 +21,7 @@ const formatMoney = (value: number, currency: string) => {
       <div class="popup-card" @click.stop>
         <div class="popup-head">
           <h3 class="popup-title">
-            {{ order.side === 'buy' ? 'Buy Order' : 'Sell Order' }}
+            {{ order.side === 'buy' ? 'Ордер на купівлю' : 'Ордер на продаж' }}
           </h3>
           <button class="popup-close" type="button" @click="emit('close')">✕</button>
         </div>
@@ -36,38 +36,38 @@ const formatMoney = (value: number, currency: string) => {
 
         <div class="popup-grid">
           <div class="popup-item">
-            <span>Amount</span>
+            <span>Сума</span>
             <strong>{{ formatMoney(order.amount, order.currency) }}</strong>
           </div>
 
           <div class="popup-item">
-            <span>Quantity</span>
+            <span>Кількість</span>
             <strong>{{ order.quantity }}</strong>
           </div>
 
           <div class="popup-item">
-            <span>Limit Price</span>
+            <span>Лімітна ціна</span>
             <strong>{{ formatMoney(order.limitPrice, order.currency) }}</strong>
           </div>
 
           <div class="popup-item">
-            <span>Duration</span>
+            <span>Тривалість</span>
             <strong>
               {{
                 order.durationUnit === 'unlimited'
-                  ? 'Unlimited'
-                  : `${order.durationValue} ${order.durationUnit === 'hours' ? 'hr.' : 'd.'}`
+                  ? 'Без обмежень'
+                  : `${order.durationValue} ${order.durationUnit === 'hours' ? 'год.' : 'дн.'}`
               }}
             </strong>
           </div>
 
           <div class="popup-item" v-if="order.quantityMode">
-            <span>Purchase Type</span>
-            <strong>{{ order.quantityMode === 'whole' ? 'Whole share' : 'Fractional share' }}</strong>
+            <span>Тип купівлі</span>
+            <strong>{{ order.quantityMode === 'whole' ? 'Ціла акція' : 'Часткова акція' }}</strong>
           </div>
 
           <div class="popup-item">
-            <span>Progress</span>
+            <span>Прогрес</span>
             <strong>{{ order.progress }}%</strong>
           </div>
         </div>
