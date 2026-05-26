@@ -38,8 +38,8 @@ const formatPrice = (value: number) => {
   <section class="stocks-card">
     <div class="stocks-card__head">
       <div>
-        <p class="stocks-card__label">Market</p>
-        <h3 class="stocks-card__title">Trending Stocks</h3>
+        <p class="stocks-card__label">Ринок</p>
+        <h3 class="stocks-card__title">Акції у тренді</h3>
       </div>
     </div>
 

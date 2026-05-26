@@ -112,7 +112,7 @@ const createOrder = async () => {
       </label>
 
       <label class="trade-field">
-        <span>Currency</span>
+        <span>Валюта</span>
         <select v-model="form.currency" class="trade-input">
           <option v-for="currency in currencies" :key="currency" :value="currency">
             {{ currency }}
@@ -121,37 +121,37 @@ const createOrder = async () => {
       </label>
 
       <div class="trade-balance-row">
-        <span class="trade-balance-label">Available shares</span>
+        <span class="trade-balance-label">Доступних акцій</span>
         <span class="trade-balance-value">{{ availableQuantity }}</span>
       </div>
 
       <div v-if="availableQuantity === 0" class="trade-no-holdings">
-        You have no {{ company.ticker }} shares to sell.
+        У вас немає акцій {{ company.ticker }} для продажу.
       </div>
 
       <label class="trade-field">
-        <span>Quantity to Sell</span>
+        <span>Кількість до продажу</span>
         <div class="trade-qty-row">
           <input v-model="form.quantity" type="number" min="0" step="0.01" class="trade-input trade-input--flex" />
           <button type="button" class="trade-max-btn" @click="setMaxQty" :disabled="availableQuantity === 0">
-            Max {{ availableQuantity }}
+            Макс {{ availableQuantity }}
           </button>
         </div>
       </label>
 
       <label class="trade-field">
-        <span>Sell Price</span>
+        <span>Ціна продажу</span>
         <input v-model="form.limitPrice" type="number" min="0" step="0.01" class="trade-input" />
       </label>
 
       <div class="trade-summary" v-if="Number(form.quantity) > 0 && Number(form.limitPrice) > 0">
-        <span>Total proceeds</span>
+        <span>Загальна виручка</span>
         <strong>${{ totalProceeds }}</strong>
       </div>
 
       <div class="trade-row">
         <label class="trade-field">
-          <span>Duration</span>
+          <span>Тривалість</span>
           <select v-model="form.durationUnit" class="trade-input">
             <option
               v-for="unit in durationUnits"
@@ -160,17 +160,17 @@ const createOrder = async () => {
             >
               {{
                 unit === 'hours'
-                  ? 'Hours'
+                  ? 'Години'
                   : unit === 'days'
-                    ? 'Days'
-                    : 'Unlimited'
+                    ? 'Дні'
+                    : 'Без обмежень'
               }}
             </option>
           </select>
         </label>
 
         <label class="trade-field" v-if="form.durationUnit !== 'unlimited'">
-          <span>Amount</span>
+          <span>Значення</span>
           <input v-model="form.durationValue" type="number" min="1" class="trade-input" />
         </label>
       </div>
@@ -178,7 +178,7 @@ const createOrder = async () => {
       <p v-if="errorMsg" class="trade-error">{{ errorMsg }}</p>
 
       <button class="trade-submit" type="button" :disabled="!isValid || submitting" @click="createOrder">
-        {{ submitting ? 'Placing order...' : 'Place Sell Order' }}
+        {{ submitting ? 'Розміщення...' : 'Продати' }}
       </button>
     </div>
   </section>
