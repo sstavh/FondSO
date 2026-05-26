@@ -2141,36 +2141,7 @@ _avS3JsHtU0RQ5WJfudTcnwMsM0lGVyMB5g3jfI_0a7E,
 _wH6JrtIxmaSoA8lCPWFnE9z4lQeXW6H5z3l5aymEQw
 ];
 
-const assets = {
-  "/index 2.mjs": {
-    "type": "text/javascript; charset=utf-8",
-    "etag": "\"1b08f-FutxbHieqkAr7EH6L4g0nCBFuqY\"",
-    "mtime": "2026-05-19T08:17:56.000Z",
-    "size": 110735,
-    "path": "index 2.mjs"
-  },
-  "/index.mjs": {
-    "type": "text/javascript; charset=utf-8",
-    "etag": "\"1b3c7-8he5x03IEYotghqikA5ca/2WaIs\"",
-    "mtime": "2026-05-21T18:35:20.259Z",
-    "size": 111559,
-    "path": "index.mjs"
-  },
-  "/index.mjs 2.map": {
-    "type": "application/json",
-    "etag": "\"6b68f-6PZ9IRYfNT1Qasrw0b23+p0/FSk\"",
-    "mtime": "2026-05-19T08:17:56.000Z",
-    "size": 439951,
-    "path": "index.mjs 2.map"
-  },
-  "/index.mjs.map": {
-    "type": "application/json",
-    "etag": "\"6b6ac-AgDdvpkSdET0qMQr0aL+u9z581Q\"",
-    "mtime": "2026-05-21T18:35:20.259Z",
-    "size": 439980,
-    "path": "index.mjs.map"
-  }
-};
+const assets = {};
 
 function readAsset (id) {
   const serverDir = dirname$1(fileURLToPath(globalThis._importMeta_.url));

@@ -28,9 +28,9 @@ const closePopup = () => {
   <section class="trade-panel">
     <div class="trade-panel__card">
       <div class="trade-panel__head">
-        <h2 class="trade-panel__title">Stock Trading</h2>
+        <h2 class="trade-panel__title">Торгівля акціями</h2>
         <p class="trade-panel__text">
-          Select the order type and fill in all required fields.
+          Оберіть тип ордеру та заповніть всі необхідні поля.
         </p>
       </div>
 
@@ -41,7 +41,7 @@ const closePopup = () => {
           :class="{ active: activeTab === 'buy' }"
           @click="setTab('buy')"
         >
-          Buy
+          Купити
         </button>
 
         <button
@@ -50,7 +50,7 @@ const closePopup = () => {
           :class="{ active: activeTab === 'sell' }"
           @click="setTab('sell')"
         >
-          Sell
+          Продати
         </button>
       </div>
 
