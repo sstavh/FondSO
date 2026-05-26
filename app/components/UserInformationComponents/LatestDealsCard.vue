@@ -84,7 +84,7 @@ const statusClass = (status: string) => {
             </p>
 
             <p class="deal-item__meta">
-              {{ deal.ticker }} · {{ deal.quantity }} shares · {{ deal.date }}
+              {{ deal.ticker }} · {{ deal.quantity }} акцій · {{ deal.date }}
             </p>
           </div>
         </div>
