@@ -7,22 +7,22 @@ import auth from '~/components/LoginComponent/auth.vue';
       <div class="login-box">
         <div class="lodin-box-text">
 
-          <h3 class="box-text__title">Up to $500 welcome bonus.<br/>
-              Start investing in stocks today</h3>
-              <img class="box-text__img" src="../assets/imgs/golden-bitcoin-coin-ready-investment-financial-success-cryptocurrency-era.png" alt="Foto ">
+          <h3 class="box-text__title">До $500 вітального бонусу.<br/>
+              Почни інвестувати в акції вже сьогодні</h3>
+              <img class="box-text__img" src="../assets/imgs/golden-bitcoin-coin-ready-investment-financial-success-cryptocurrency-era.png" alt="Фото">
 
               <ul class="box-ul">
                 <li class="box-li">
-                  <img class="box-li__img" src="../assets/imgs/iconss/frea.png" alt="icon">
-                  <p class="ul-text">Bonus for sign-up + deposit</p>
+                  <img class="box-li__img" src="../assets/imgs/iconss/frea.png" alt="іконка">
+                  <p class="ul-text">Бонус за реєстрацію + депозит</p>
                 </li>
                 <li class="box-li">
-                  <img class="box-li__img" src="../assets/imgs/iconss/promo.png" alt="icon">
-                  <p class="ul-text">Free stocks (Robinhood-style)</p>
+                  <img class="box-li__img" src="../assets/imgs/iconss/promo.png" alt="іконка">
+                  <p class="ul-text">Безкоштовні акції (як Robinhood)</p>
                 </li>
                 <li class="box-li">
-                  <img class="box-li__img" src="../assets/imgs/iconss/start.png" alt="icon">
-                  <p class="ul-text">Easy start for beginners</p>
+                  <img class="box-li__img" src="../assets/imgs/iconss/start.png" alt="іконка">
+                  <p class="ul-text">Легкий старт для початківців</p>
                 </li>
               </ul>
         </div>

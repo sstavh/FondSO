@@ -102,7 +102,7 @@ const createOrder = async () => {
   <section class="trade-card">
     <div class="trade-form">
       <label class="trade-field">
-        <span>Stock</span>
+        <span>Акція</span>
         <div class="trade-asset">
           <img :src="`https://assets.parqet.com/logos/symbol/${company.ticker}`" :alt="company.name" class="trade-asset__logo" />
           <div class="trade-asset__fixed">

@@ -19,10 +19,10 @@ const formatCurrency = (value: number, currency: string) => {
 
 const formatType = (type: string) => {
   const map: Record<string, string> = {
-    deposit: 'Deposit',
-    withdrawal: 'Withdrawal',
-    transfer: 'Transfer',
-    payment: 'Payment',
+    deposit: 'Поповнення',
+    withdrawal: 'Виведення',
+    transfer: 'Переказ',
+    payment: 'Платіж',
   }
 
   return map[type] || type
@@ -30,9 +30,9 @@ const formatType = (type: string) => {
 
 const formatStatus = (status: string) => {
   const map: Record<string, string> = {
-    completed: 'Completed',
-    pending: 'Pending',
-    failed: 'Failed',
+    completed: 'Виконано',
+    pending: 'Очікує',
+    failed: 'Не вдалося',
   }
 
   return map[status] || status
@@ -43,8 +43,8 @@ const formatStatus = (status: string) => {
   <section class="transactions-card">
     <div class="transactions-card__head">
       <div>
-        <p class="transactions-card__label">Completed Transactions</p>
-        <h2 class="transactions-card__title">Transaction History</h2>
+        <p class="transactions-card__label">Завершені транзакції</p>
+        <h2 class="transactions-card__title">Історія транзакцій</h2>
       </div>
 
       <div class="transactions-card__count">
@@ -75,7 +75,7 @@ const formatStatus = (status: string) => {
     </div>
 
     <div v-else class="transactions-empty">
-      No transactions yet
+      Транзакцій ще немає
     </div>
   </section>
 </template>
