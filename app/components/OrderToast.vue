@@ -42,7 +42,7 @@ const formatAmount = (amount: number, currency: string) =>
           </div>
 
           <div class="toast__badge" :class="toast.side === 'buy' ? 'toast__badge--buy' : 'toast__badge--sell'">
-            {{ toast.side === 'buy' ? '↑ Buy' : '↓ Sell' }}
+            {{ toast.side === 'buy' ? '↑ Купити' : '↓ Продати' }}
           </div>
         </div>
       </TransitionGroup>

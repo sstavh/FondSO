@@ -20,10 +20,10 @@ const formatCurrency = (value: number, currency: string) => {
 
 const formatAction = (type: string) => {
   const map: Record<string, string> = {
-    buy: 'Bought',
-    sell: 'Sold',
-    BUY: 'Bought',
-    SELL: 'Sold',
+    buy: 'Куплено',
+    sell: 'Продано',
+    BUY: 'Куплено',
+    SELL: 'Продано',
   }
 
   return map[type] || type
@@ -31,12 +31,12 @@ const formatAction = (type: string) => {
 
 const formatStatus = (status: string) => {
   const map: Record<string, string> = {
-    completed: 'Completed',
-    COMPLETED: 'Completed',
-    pending: 'Pending',
-    PENDING: 'Pending',
-    failed: 'Failed',
-    FAILED: 'Failed',
+    completed: 'Виконано',
+    COMPLETED: 'Виконано',
+    pending: 'Очікує',
+    PENDING: 'Очікує',
+    failed: 'Не вдалося',
+    FAILED: 'Не вдалося',
   }
 
   return map[status] || status
@@ -56,8 +56,8 @@ const statusClass = (status: string) => {
 <template>
   <section class="deals-card">
     <div class="deals-card__head">
-      <p class="deals-card__label">History</p>
-      <h3 class="deals-card__title">Latest Deals</h3>
+      <p class="deals-card__label">Історія</p>
+      <h3 class="deals-card__title">Останні угоди</h3>
     </div>
 
     <div class="deals-list">
