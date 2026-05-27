@@ -22,13 +22,13 @@ const fullName = computed(() => {
 })
 
 const formattedPurpose = computed(() => {
-  if (props.userProfile.purpose === 'investment') return 'For investing'
-  if (props.userProfile.purpose === 'trading') return 'For trading'
-  return 'Not set'
+  if (props.userProfile.purpose === 'investment') return 'Для інвестування'
+  if (props.userProfile.purpose === 'trading') return 'Для трейдингу'
+  return 'Не вказано'
 })
 
 const formattedBirthDate = computed(() => {
-  if (!props.userProfile.birthDate) return 'Not set'
+  if (!props.userProfile.birthDate) return 'Не вказано'
 
   const date = new Date(props.userProfile.birthDate)
 
@@ -41,8 +41,8 @@ const formattedBirthDate = computed(() => {
 
 const registrationStatus = computed(() => {
   return props.userProfile.registrationCompleted
-    ? 'Registration complete'
-    : 'Registration incomplete'
+    ? 'Реєстрацію завершено'
+    : 'Реєстрацію не завершено'
 })
 
 const showGoalForm = ref(false)
@@ -125,7 +125,7 @@ const logout = () => {
         </h3>
 
         <p class="account-popup__email">
-          {{ userProfile.email || 'Email not set' }}
+          {{ userProfile.email || 'Email не вказано' }}
         </p>
 
         <div class="account-popup__status">
@@ -136,44 +136,44 @@ const logout = () => {
       <div class="account-popup__content">
         <div class="account-popup__grid">
           <div class="info-card">
-            <p class="info-card__label">First Name</p>
+            <p class="info-card__label">Ім'я</p>
             <p class="info-card__value">
-              {{ userProfile.firstName || 'Not set' }}
+              {{ userProfile.firstName || 'Не вказано' }}
             </p>
           </div>
 
           <div class="info-card">
-            <p class="info-card__label">Last Name</p>
+            <p class="info-card__label">Прізвище</p>
             <p class="info-card__value">
-              {{ userProfile.lastName || 'Not set' }}
+              {{ userProfile.lastName || 'Не вказано' }}
             </p>
           </div>
 
           <div class="info-card">
-            <p class="info-card__label">Country</p>
+            <p class="info-card__label">Країна</p>
             <p class="info-card__value">
-              {{ userProfile.country || 'Not set' }}
+              {{ userProfile.country || 'Не вказано' }}
             </p>
           </div>
 
           <div class="info-card">
-            <p class="info-card__label">Account Purpose</p>
+            <p class="info-card__label">Мета рахунку</p>
             <p class="info-card__value">
               {{ formattedPurpose }}
             </p>
           </div>
 
           <div class="info-card">
-            <p class="info-card__label">Date of Birth</p>
+            <p class="info-card__label">Дата народження</p>
             <p class="info-card__value">
               {{ formattedBirthDate }}
             </p>
           </div>
 
           <div class="info-card">
-            <p class="info-card__label">Phone Number</p>
+            <p class="info-card__label">Номер телефону</p>
             <p class="info-card__value">
-              {{ userProfile.phone || 'Not set' }}
+              {{ userProfile.phone || 'Не вказано' }}
             </p>
           </div>
         </div>

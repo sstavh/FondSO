@@ -107,46 +107,46 @@ const hasEnoughBalance = computed(() => {
 
 const amountError = computed(() => {
   if (!touched.amount) return ''
-  if (!form.amount) return 'Enter amount.'
-  if (!/^\d+(\.\d{1,2})?$/.test(form.amount)) return 'Numbers only, up to 2 decimal places.'
-  if (Number(form.amount) <= 0) return 'Amount must be greater than 0.'
-  if (!hasEnoughBalance.value) return 'Insufficient balance.'
+  if (!form.amount) return 'Введіть суму.'
+  if (!/^\d+(\.\d{1,2})?$/.test(form.amount)) return 'Тільки цифри, до 2 знаків після коми.'
+  if (Number(form.amount) <= 0) return 'Сума має бути більше 0.'
+  if (!hasEnoughBalance.value) return 'Недостатньо коштів.'
   return ''
 })
 
 const cardNumberError = computed(() => {
   if (!touched.cardNumber) return ''
   const digits = form.cardNumber.replace(/\s/g, '')
-  if (!digits) return 'Enter card number.'
-  if (digits.length !== 16) return 'Card number must be 16 digits.'
+  if (!digits) return 'Введіть номер картки.'
+  if (digits.length !== 16) return 'Номер картки має містити 16 цифр.'
   return ''
 })
 
 const cardHolderError = computed(() => {
   if (!touched.cardHolder) return ''
   const value = form.cardHolder.trim()
-  if (!value) return 'Enter cardholder name.'
-  if (value.length < 3) return 'Minimum 3 characters.'
-  if (!/^[A-Za-zА-Яа-яІіЇїЄєҐґ\s'-]+$/.test(value)) return 'Only letters, spaces, apostrophes and hyphens.'
+  if (!value) return "Введіть ім'я власника."
+  if (value.length < 3) return 'Мінімум 3 символи.'
+  if (!/^[A-Za-zА-Яа-яІіЇїЄєҐґ\s'-]+$/.test(value)) return 'Лише літери, пробіли, апострофи та дефіси.'
   return ''
 })
 
 const expiryError = computed(() => {
   if (!touched.expiry) return ''
-  if (!form.expiry) return 'Enter expiry date.'
-  if (!/^\d{2}\/\d{2}$/.test(form.expiry)) return 'Format must be MM/YY.'
+  if (!form.expiry) return 'Введіть термін дії.'
+  if (!/^\d{2}\/\d{2}$/.test(form.expiry)) return 'Формат має бути ММ/РР.'
 
   const [monthText] = form.expiry.split('/')
   const month = Number(monthText)
 
-  if (month < 1 || month > 12) return 'Month must be between 01 and 12.'
+  if (month < 1 || month > 12) return 'Місяць має бути від 01 до 12.'
   return ''
 })
 
 const cvvError = computed(() => {
   if (!touched.cvv) return ''
-  if (!form.cvv) return 'Enter CVV.'
-  if (!/^\d{3}$/.test(form.cvv)) return 'CVV must be 3 digits.'
+  if (!form.cvv) return 'Введіть CVV.'
+  if (!/^\d{3}$/.test(form.cvv)) return 'CVV має містити 3 цифри.'
   return ''
 })
 
@@ -216,8 +216,8 @@ const submitWithdraw = async () => {
       >
         <div class="withdraw-popup__head">
           <div>
-            <p class="withdraw-popup__eyebrow">Balance</p>
-            <h3 class="withdraw-popup__title">Withdraw Funds</h3>
+            <p class="withdraw-popup__eyebrow">Баланс</p>
+            <h3 class="withdraw-popup__title">Виведення коштів</h3>
           </div>
 
           <button
@@ -230,27 +230,27 @@ const submitWithdraw = async () => {
         </div>
 
         <div class="withdraw-balance-box">
-          <span>Available Balance</span>
+          <span>Доступний баланс</span>
           <strong>{{ balanceStore.balance.toFixed(2) }} {{ balanceStore.currency }}</strong>
         </div>
 
         <div class="withdraw-popup__form">
           <label class="withdraw-field">
-            <span>Amount</span>
+            <span>Сума</span>
             <input
               v-model="form.amount"
               type="text"
               inputmode="decimal"
               maxlength="12"
               class="withdraw-input"
-              placeholder="Enter amount"
+              placeholder="Введіть суму"
               @blur="touched.amount = true"
             />
             <small v-if="amountError" class="withdraw-error">{{ amountError }}</small>
           </label>
 
           <label class="withdraw-field">
-            <span>Currency</span>
+            <span>Валюта</span>
             <select
               v-model="form.currency"
               class="withdraw-input"
@@ -266,7 +266,7 @@ const submitWithdraw = async () => {
           </label>
 
           <label class="withdraw-field withdraw-field--full">
-            <span>Card Number</span>
+            <span>Номер картки</span>
             <input
               v-model="formattedCardNumber"
               type="text"
@@ -280,13 +280,13 @@ const submitWithdraw = async () => {
           </label>
 
           <label class="withdraw-field withdraw-field--full">
-            <span>Cardholder Name</span>
+            <span>Ім'я власника</span>
             <input
               v-model="formattedCardHolder"
               type="text"
               maxlength="40"
               class="withdraw-input"
-              placeholder="IVAN PETRENKO"
+              placeholder="ІВАН ПЕТРЕНКО"
               @blur="touched.cardHolder = true"
             />
             <small v-if="cardHolderError" class="withdraw-error">{{ cardHolderError }}</small>
@@ -294,7 +294,7 @@ const submitWithdraw = async () => {
 
           <div class="withdraw-row">
             <label class="withdraw-field">
-              <span>MM/YY</span>
+              <span>ММ/РР</span>
               <input
                 v-model="formattedExpiry"
                 type="text"
@@ -329,7 +329,7 @@ const submitWithdraw = async () => {
             class="withdraw-popup__cancel"
             @click="emit('close')"
           >
-            Cancel
+            Скасувати
           </button>
 
           <button
@@ -338,7 +338,7 @@ const submitWithdraw = async () => {
             :disabled="!isValid"
             @click="submitWithdraw"
           >
-            Withdraw
+            Вивести
           </button>
         </div>
       </div>

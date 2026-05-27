@@ -153,8 +153,8 @@ onUnmounted(() => {
           <p class="orders-item__duration">
             {{
               order.durationUnit === 'unlimited'
-                ? 'Unlimited'
-                : `${order.durationValue} ${order.durationUnit === 'hours' ? 'hr.' : 'd.'}`
+                ? 'Без обмежень'
+                : `${order.durationValue} ${order.durationUnit === 'hours' ? 'год.' : 'дн.'}`
             }}
           </p>
         </div>
@@ -172,7 +172,7 @@ onUnmounted(() => {
       </article>
     </div>
 
-    <p v-else class="orders-empty">No active orders.</p>
+    <p v-else class="orders-empty">Немає активних ордерів.</p>
   </section>
 </template>
 

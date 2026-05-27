@@ -135,7 +135,7 @@ const currentComponent = computed(() => {
                     />
                   </svg>
                 </span>
-                <span>Home</span>
+                <span>Головна</span>
               </div>
             </li>
 
@@ -163,7 +163,7 @@ const currentComponent = computed(() => {
                     />
                   </svg>
                 </span>
-                <span>Portfolio</span>
+                <span>Портфель</span>
               </div>
 
               <span class="nav-arrow" :class="{ 'nav-arrow--open': isPortfolioOpen }">
@@ -185,7 +185,7 @@ const currentComponent = computed(() => {
                 :class="{ active: activeView === 'balance' }"
                 @click="selectView('balance')"
               >
-                Balance
+                Баланс
               </li>
 
               <li
@@ -193,7 +193,7 @@ const currentComponent = computed(() => {
                 :class="{ active: activeView === 'portfolio-overview-2' }"
                 @click="selectView('portfolio-overview-2')"
               >
-                Goal
+                Ціль
               </li>
 
               <li
@@ -201,7 +201,7 @@ const currentComponent = computed(() => {
                 :class="{ active: activeView === 'portfolio-history' }"
                 @click="selectView('portfolio-history')"
               >
-                History
+                Історія
               </li>
 
             
@@ -230,7 +230,7 @@ const currentComponent = computed(() => {
                     />
                   </svg>
                 </span>
-                <span>Trading</span>
+                <span>Торгівля</span>
               </div>
             </li>
           </ul>
@@ -239,11 +239,11 @@ const currentComponent = computed(() => {
         <div class="sidebar-bottom">
           <div class="wallet-actions">
             <button class="wallet-action wallet-action--refill" type="button" @click="openRefillPopup">
-              Deposit
+              Поповнити
             </button>
 
             <button class="wallet-action wallet-action--withdraw" type="button" @click="openWithdrawPopup">
-              Withdraw
+              Вивести
             </button>
           </div>
 
