@@ -4,6 +4,8 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci --prefer-offline
 COPY . .
+ARG NUXT_PUBLIC_API_BASE=http://localhost:8080
+ENV NUXT_PUBLIC_API_BASE=${NUXT_PUBLIC_API_BASE}
 RUN npm run build
 
 # Stage 2: minimal runtime
