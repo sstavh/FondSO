@@ -1,20 +1,20 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import type { MarketCompany, MarketPoint } from '~/composables/useApi'
 
-const BASE_URL = 'http://localhost:8080'
-
-const apiGet = async <T>(path: string): Promise<T> => {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('fondso_token') ?? '' : ''
-  const res = await fetch(`${BASE_URL}${path}`, {
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
-  })
-  if (!res.ok) throw new Error(`API ${res.status}`)
-  return res.json()
-}
-
 export { type MarketCompany, type MarketPoint }
 
 export const useLiveMarketChart = (company: () => MarketCompany) => {
+  const config = useRuntimeConfig()
+
+  const apiGet = async <T>(path: string): Promise<T> => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('fondso_token') ?? '' : ''
+    const res = await fetch(`${config.public.apiBase}${path}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
+    if (!res.ok) throw new Error(`API ${res.status}`)
+    return res.json()
+  }
+
   const points = ref<MarketPoint[]>([])
   let intervalId: ReturnType<typeof setInterval> | null = null
 

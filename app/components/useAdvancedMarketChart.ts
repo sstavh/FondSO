@@ -9,20 +9,20 @@ export type TimeframeKey = '1D' | '1W' | '1M' | '3M'
 
 interface ApiPoint { time: string; value: number }
 
-const BASE_URL = 'http://localhost:8080'
-
-const apiGet = async <T>(path: string): Promise<T> => {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('fondso_token') ?? '' : ''
-  const res = await fetch(`${BASE_URL}${path}`, {
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
-  })
-  if (!res.ok) throw new Error(`API ${res.status}`)
-  return res.json()
-}
-
 const clamp = (v: number, min: number, max: number) => Math.min(Math.max(v, min), max)
 
 export const useAdvancedMarketChart = (company: () => MarketCompany) => {
+  const config = useRuntimeConfig()
+
+  const apiGet = async <T>(path: string): Promise<T> => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('fondso_token') ?? '' : ''
+    const res = await fetch(`${config.public.apiBase}${path}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
+    if (!res.ok) throw new Error(`API ${res.status}`)
+    return res.json()
+  }
+
   const chartWidth = 1080
   const chartHeight = 460
   const indicatorHeight = 60
