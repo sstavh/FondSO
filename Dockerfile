@@ -14,4 +14,5 @@ WORKDIR /app
 COPY --from=build /app/.output ./.output
 EXPOSE 3000
 ENV NODE_ENV=production
+ENV NUXT_PUBLIC_API_BASE=https://fondso-bg.fly.dev
 CMD ["node", ".output/server/index.mjs"]
